@@ -1,0 +1,150 @@
+import { createRouter, createWebHistory } from 'vue-router'
+
+import LoginView from '@/views/auth/LoginView.vue'
+import RegisterView from '@/views/auth/RegisterView.vue'
+import ForgetPasswordView from '@/views/auth/ForgetPassword/ForgetPasswordView.vue'
+import ResetPasswordView from '@/views/auth/ForgetPassword/ResetPasswordView.vue'
+import OtpVerifyView from '@/views/auth/OTP/OTPVerifyView.vue'
+import SentOtpView from '@/views/auth/OTP/SentOTPView.vue'
+
+import LayoutsDashboard from '@/components/layouts/LayoutsDashboard.vue'
+
+import HomeView from '@/views/HomeView.vue'
+import ProfileView from '@/views/ProfileView.vue'
+import CategoryView from '@/views/Category/CategoryView.vue'
+
+import LandingView from '@/views/LandingView.vue'
+import LandingFtView from '@/views/landingAllpage/LandingFtView.vue'
+import LandingAboutView from '@/views/landingAllpage/LandingAboutView.vue'
+import LandingHomeView from '@/views/landingAllpage/LandingHomeView.vue'
+
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+
+  routes: [
+    // ✅ Root "/" — guard នឹង redirect ដោយ automatic
+    {
+      path: '/',
+      redirect: '/landing/homelanding',
+    },
+
+    // Landing — guestOnly (login ហើយ → dashboard)
+    {
+      path: '/landing',
+      component: LandingView,
+      redirect: '/landing/homelanding',
+      meta: { guestOnly: true },   // ✅ login ហើយ មកទីនេះ → redirect dashboard
+      children: [
+        {
+          path: 'homelanding',
+          name: 'landing',
+          component: LandingHomeView,
+          meta: { title: 'Landing Page', guestOnly: true },
+        },
+        {
+          path: 'function',
+          name: 'landingfunction',
+          component: LandingFtView,
+          meta: { title: 'Function Page', guestOnly: true },
+        },
+        {
+          path: 'about',
+          name: 'landingabout',
+          component: LandingAboutView,
+          meta: { title: 'About Page', guestOnly: true },
+        },
+      ],
+    },
+
+    // Auth — guestOnly
+    {
+      path: '/login',
+      name: 'login',
+      component: LoginView,
+      meta: { title: 'Login', guestOnly: true },
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: RegisterView,
+      meta: { title: 'Register', guestOnly: true },
+    },
+    {
+      path: '/otp-verify',
+      name: 'otp-verify',
+      component: OtpVerifyView,
+      meta: { title: 'OTP Verify', guestOnly: true },
+    },
+    {
+      path: '/sent-otp',
+      name: 'sent-otp',
+      component: SentOtpView,
+      meta: { title: 'Sent OTP', guestOnly: true },
+    },
+    {
+      path: '/forgot-password',
+      name: 'forgot-password',
+      component: ForgetPasswordView,
+      meta: { title: 'Forgot Password', guestOnly: true },
+    },
+    {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: ResetPasswordView,
+      meta: { title: 'Reset Password', guestOnly: true },
+    },
+
+    // Dashboard — requiresAuth
+    {
+      path: '/dashboard',
+      component: LayoutsDashboard,
+      redirect: '/dashboard/home',
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: 'home',
+          name: 'dashboard',
+          component: HomeView,
+          meta: { title: 'Dashboard', requiresAuth: true },
+        },
+        {
+          path: 'profile',
+          name: 'profile',
+          component: ProfileView,
+          meta: { title: 'Profile', requiresAuth: true },
+        },
+        {
+          path: 'category',
+          name: 'category',
+          component: CategoryView,
+          meta: { title: 'Categories', requiresAuth: true },
+        },
+      ],
+    },
+
+    // 404
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/landing/homelanding',
+    },
+  ],
+})
+
+router.beforeEach((to) => {
+  document.title = to.meta.title || 'Expense Tracker'
+
+  const isAuthenticated =
+    !!localStorage.getItem('token') || !!sessionStorage.getItem('token')
+
+  // មិនទាន់ login + ទៅ page requiresAuth → landing
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    return { name: 'landing' }
+  }
+
+  // login ហើយ + ទៅ page guestOnly (landing/login/register...) → dashboard
+  if (to.meta.guestOnly && isAuthenticated) {
+    return { name: 'dashboard' }
+  }
+})
+
+export default router
