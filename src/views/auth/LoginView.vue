@@ -159,10 +159,6 @@ const submitLogin = async () => {
 
           </form>
 
-          <div class="register-row">
-            <span class="register-hint">មិនទាន់មានគណនី?</span>
-            <RouterLink class="register-link" :to="{ name: 'register' }">បង្កើតគណនី</RouterLink>
-          </div>
         </div>
       </div>
     </section>

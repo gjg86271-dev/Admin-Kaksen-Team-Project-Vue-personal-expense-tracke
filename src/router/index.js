@@ -1,11 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import LoginView from '@/views/auth/LoginView.vue'
-import RegisterView from '@/views/auth/RegisterView.vue'
 import ForgetPasswordView from '@/views/auth/ForgetPassword/ForgetPasswordView.vue'
 import ResetPasswordView from '@/views/auth/ForgetPassword/ResetPasswordView.vue'
-import OtpVerifyView from '@/views/auth/OTP/OTPVerifyView.vue'
-import SentOtpView from '@/views/auth/OTP/SentOTPView.vue'
 
 import LayoutsDashboard from '@/components/layouts/LayoutsDashboard.vue'
 
@@ -23,18 +20,18 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
 
   routes: [
-    // ✅ Root "/" — guard នឹង redirect ដោយ automatic
+    // ✅ Root "/" redirect
     {
       path: '/',
       redirect: '/landing/homelanding',
     },
 
-    // Landing — guestOnly (login ហើយ → dashboard)
+    // Landing — guestOnly
     {
       path: '/landing',
       component: LandingView,
       redirect: '/landing/homelanding',
-      meta: { guestOnly: true },   // ✅ login ហើយ មកទីនេះ → redirect dashboard
+      meta: { guestOnly: true },
       children: [
         {
           path: 'homelanding',
@@ -65,24 +62,6 @@ const router = createRouter({
       meta: { title: 'Login', guestOnly: true },
     },
     {
-      path: '/register',
-      name: 'register',
-      component: RegisterView,
-      meta: { title: 'Register', guestOnly: true },
-    },
-    {
-      path: '/otp-verify',
-      name: 'otp-verify',
-      component: OtpVerifyView,
-      meta: { title: 'OTP Verify', guestOnly: true },
-    },
-    {
-      path: '/sent-otp',
-      name: 'sent-otp',
-      component: SentOtpView,
-      meta: { title: 'Sent OTP', guestOnly: true },
-    },
-    {
       path: '/forgot-password',
       name: 'forgot-password',
       component: ForgetPasswordView,
@@ -95,7 +74,7 @@ const router = createRouter({
       meta: { title: 'Reset Password', guestOnly: true },
     },
 
-    // Dashboard — requiresAuth
+    // Dashboard — requiresAuth + Admin only
     {
       path: '/dashboard',
       component: LayoutsDashboard,
@@ -125,7 +104,7 @@ const router = createRouter({
           name: 'user',
           component: UserView,
           meta: { title: 'User', requiresAuth: true },
-        }
+        },
       ],
     },
 
@@ -143,13 +122,27 @@ router.beforeEach((to) => {
   const isAuthenticated =
     !!localStorage.getItem('token') || !!sessionStorage.getItem('token')
 
-  // មិនទាន់ login + ទៅ page requiresAuth → landing
+  // ✅ ទាញ role ពី storage
+  const role =
+    localStorage.getItem('role') || sessionStorage.getItem('role')
+  const isAdmin = role === 'ADMIN'
+
+  // មិនទាន់ login + ទៅ requiresAuth → landing
   if (to.meta.requiresAuth && !isAuthenticated) {
     return { name: 'landing' }
   }
 
-  // login ហើយ + ទៅ page guestOnly (landing/login/register...) → dashboard
-  if (to.meta.guestOnly && isAuthenticated) {
+  // ✅ login ហើយ ប៉ុន្តែ មិនមែន ADMIN → kick ចេញ clear storage
+  if (to.meta.requiresAuth && isAuthenticated && !isAdmin) {
+    localStorage.removeItem('token')
+    localStorage.removeItem('role')
+    sessionStorage.removeItem('token')
+    sessionStorage.removeItem('role')
+    return { name: 'login' }
+  }
+
+  // login + ADMIN + ទៅ guestOnly → dashboard
+  if (to.meta.guestOnly && isAuthenticated && isAdmin) {
     return { name: 'dashboard' }
   }
 })
