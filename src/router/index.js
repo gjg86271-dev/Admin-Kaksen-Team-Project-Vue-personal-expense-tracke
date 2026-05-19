@@ -12,6 +12,7 @@ import LayoutsDashboard from '@/components/layouts/LayoutsDashboard.vue'
 import HomeView from '@/views/HomeView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import CategoryView from '@/views/Category/CategoryView.vue'
+import UserView from '@/views/User/UserView.vue'
 
 import LandingView from '@/views/LandingView.vue'
 import LandingFtView from '@/views/landingAllpage/LandingFtView.vue'
@@ -119,6 +120,12 @@ const router = createRouter({
           component: CategoryView,
           meta: { title: 'Categories', requiresAuth: true },
         },
+        {
+          path: 'user',
+          name: 'user',
+          component: UserView,
+          meta: { title: 'User', requiresAuth: true },
+        }
       ],
     },
 
