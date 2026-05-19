@@ -178,7 +178,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> 
 
       <!-- ─── PAGINATION ──────────────────────────────────────────────────── -->
       <div v-if="totalPages > 1" class="d-flex justify-content-center mt-4">
