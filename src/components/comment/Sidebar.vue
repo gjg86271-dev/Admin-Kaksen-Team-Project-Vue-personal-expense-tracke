@@ -15,9 +15,9 @@
         <span class="sidebar__label">ផ្ទាំងគ្រប់គ្រង</span>
       </RouterLink>
 
-      <RouterLink to="/dashboard/transactions" class="sidebar__item" active-class="sidebar__item--active">
+      <RouterLink to="/dashboard/user" class="sidebar__item" active-class="sidebar__item--active">
         <i class="bi bi-arrow-left-right sidebar__icon"></i>
-        <span class="sidebar__label">ប្រតិបត្តិការ</span>
+        <span class="sidebar__label">អ្នកប្រើប្រាស់</span>
       </RouterLink>
 
       <RouterLink to="/dashboard/category" class="sidebar__item" active-class="sidebar__item--active">
