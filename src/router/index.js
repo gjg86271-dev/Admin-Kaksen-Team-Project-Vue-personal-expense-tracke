@@ -15,6 +15,7 @@ import LandingView from '@/views/LandingView.vue'
 import LandingFtView from '@/views/landingAllpage/LandingFtView.vue'
 import LandingAboutView from '@/views/landingAllpage/LandingAboutView.vue'
 import LandingHomeView from '@/views/landingAllpage/LandingHomeView.vue'
+import DetailUser from '@/views/User/DetailUser.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -104,6 +105,14 @@ const router = createRouter({
           name: 'user',
           component: UserView,
           meta: { title: 'User', requiresAuth: true },
+          children: [
+            {
+              path: 'detailuser',
+              name: 'detailuser',
+              component : DetailUser,
+              meta: { title: 'DetailUser', requiresAuth: true },
+            }
+          ]
         },
       ],
     },
