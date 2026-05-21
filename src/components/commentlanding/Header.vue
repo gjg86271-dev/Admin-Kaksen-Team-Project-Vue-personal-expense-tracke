@@ -39,11 +39,8 @@
 
           <!-- Right Buttons -->
           <div class="navbar-right">
-            <RouterLink to="/login" class="btn btn-outline-primary rounded-5 px-4">
-              ចូលប្រើ
-            </RouterLink>
-            <RouterLink to="/dashboard" class="btn btn-primary rounded-5 px-5">
-              ចុះឈ្មោះ
+            <RouterLink to="/login" class="btn btn-primary rounded-5 px-4">
+              ចូលប្រើមុខងាអ្នកគ្រប់គ្រង
             </RouterLink>
           </div>
         </div>
