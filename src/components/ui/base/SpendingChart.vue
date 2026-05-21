@@ -347,13 +347,35 @@ onBeforeUnmount(() => destroyCharts())
 }
 
 /* LEGEND */
+/* LEGEND */
 .legend {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 9px;
-  overflow: hidden;
+  overflow-y: auto;   /* ✅ enable vertical scroll */
+  overflow-x: hidden;
   min-width: 0;
+  max-height: 180px;  /* ✅ scroll height */
+  padding-right: 4px;
+}
+
+/* Optional modern scrollbar */
+.legend::-webkit-scrollbar {
+  width: 6px;
+}
+
+.legend::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.legend::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 20px;
+}
+
+.legend::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
 }
 
 .legend-item {
