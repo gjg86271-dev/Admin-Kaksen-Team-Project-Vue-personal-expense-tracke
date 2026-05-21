@@ -21,39 +21,10 @@ export const useDashboardStore = defineStore("dashboard", () => {
     }
   }
 
-  
-  async function fetchTransactions() {
-    loading.value = true;
-
-    try {
-      const res = await api.get(
-        "/transactions?_page=1&_per_page=100&sortBy=id&sortDir=asc"
-      );
-
-      const items = res.data.data.items || [];
-
-      // INCOME COUNT
-      incomeCount.value = items.filter(
-        (t) => t.category?.type === "INCOME"
-      ).length;
-
-      // EXPENSE COUNT
-      expenseCount.value = items.filter(
-        (t) => t.category?.type === "EXPENSE"
-      ).length;
-
-    } catch (err) {
-      console.log("Dashboard error:", err.response?.data || err);
-      error.value = err;
-    } finally {
-      loading.value = false;
-    }
-  }
 
   async function fetchDashboard() {
     await Promise.all([
-      fetchUsers(),
-      fetchTransactions(),
+      fetchUsers()
     ]);
   }
 

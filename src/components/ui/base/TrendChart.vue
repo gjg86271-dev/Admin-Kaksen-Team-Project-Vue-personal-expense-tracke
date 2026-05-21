@@ -1,5 +1,5 @@
 <template>
-  <div class="card border-0 shadow">
+  <div class="card border-0   ">
     <!-- HEADER -->
     <div class="card-header bg-white border-0">
       <h3 class="card-title">
@@ -224,10 +224,9 @@ onBeforeUnmount(() => {
   background: #ffffff;
   border-radius: 18px;
   padding: 1.25rem 1.5rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-
-  height: 100%;
-
+  
+  
+ 
   display: flex;
   flex-direction: column;
 
@@ -261,7 +260,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
 
-  padding: 0;
+  
 }
 
 /* CHART */

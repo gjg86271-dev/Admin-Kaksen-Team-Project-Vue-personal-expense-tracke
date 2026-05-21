@@ -3,7 +3,7 @@
 
     <!-- HEADER -->
     <div class="spend-card__header">
-      <h3 class="spend-card__title">ចំណូល និង ចំណាយ តាមប្រភេទ</h3>
+      
     </div>
 
     <!-- LOADING -->
@@ -203,8 +203,8 @@ onBeforeUnmount(() => destroyCharts())
 .spend-card {
   background: #fff;
   border-radius: 16px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  
+  
   overflow: hidden;
   width: 100%;
 }
@@ -250,7 +250,7 @@ onBeforeUnmount(() => destroyCharts())
 
 /* CHARTS ROW — equal flex children */
 .charts-row {
-  display: flex;
+  /* display: flex; */
   gap: 20px;
   align-items: stretch; /* make both boxes same height */
 }
@@ -265,6 +265,8 @@ onBeforeUnmount(() => destroyCharts())
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  margin-bottom: 5px;
+
 }
 
 /* CHART BOX HEADER */
