@@ -2,7 +2,7 @@
   <div class="dashboard">
 
     <!-- HEADER -->
-    <div class="dashboard-header">
+    <div class="header-card">
       <div>
         <h1 class="dashboard-title">ផ្ទាំងគ្រប់គ្រង</h1>
         <p class="dashboard-subtitle">
@@ -10,93 +10,63 @@
         </p>
       </div>
 
-      <div class="dashboard-date">
+      <div class="date-chip">
         <i class="bi bi-calendar3"></i>
         <span>{{ today }}</span>
       </div>
     </div>
 
-    <!-- TOP CARDS -->
+    <!-- HERO -->
+    <div class="hero-banner">
+      <div class="hero-content">
+        <div class="hero-text">
+          <span class="hero-badge">
+            <i class="bi bi-stars"></i>
+            Smart Dashboard
+          </span>
+
+          <h1>សូមស្វាគមន៍ការត្រឡប់មកវិញ 👋</h1>
+
+          <p>
+            តាមដានចំណូល ចំណាយ និងសកម្មភាពប្រព័ន្ធ
+            របស់អ្នកបានយ៉ាងងាយស្រួល និងទាន់សម័យ
+          </p>
+        </div>
+
+        <div class="hero-image">
+          <img src="/src/assets/img/image.png" />
+        </div>
+      </div>
+    </div>
+
+    <!-- CARDS -->
     <div class="top-cards">
 
-      <!-- USERS -->
       <div class="summary-card users-card">
         <div class="card-top">
           <div>
             <p class="card-label">អ្នកប្រើប្រាស់សរុប</p>
-            <h2 class="card-value">
-              {{ dashboard.totalUsers }}
-            </h2>
+            <h2 class="card-value">{{ dashboard.totalUsers }}</h2>
           </div>
 
           <div class="card-icon users-icon">
             <i class="bi bi-people-fill"></i>
           </div>
         </div>
-
-        <div class="card-bottom">
-          <span class="growth positive">
-            <i class="bi bi-arrow-up-short"></i>
-            +12%
-          </span>
-
-          <span class="card-desc">
-            កើនឡើងពីសប្តាហ៍មុន
-          </span>
-        </div>
       </div>
 
-      <!-- INCOME -->
-      <div class="summary-card income-card">
+      <div class="summary-card category-card">
         <div class="card-top">
           <div>
-            <p class="card-label">ចំណូលសរុបតាមប្រភេទ</p>
+            <p class="card-label">ប្រភេទសរុប</p>
             <h2 class="card-value">
-              {{ dashboard.incomeCount }}
+              {{ totalAllCategories.totalCategories }}
             </h2>
           </div>
 
-          <div class="card-icon income-icon">
-            <i class="bi bi-cash-stack"></i>
+          <div class="card-icon category-icon">
+            <i class="bi bi-grid-fill"></i>
           </div>
-        </div>
-
-        <div class="card-bottom">
-          <span class="growth positive">
-            <i class="bi bi-arrow-up-short"></i>
-            +8%
-          </span>
-
-          <span class="card-desc">
-            ចំណូលកំពុងកើនឡើង
-          </span>
-        </div>
-      </div>
-
-      <!-- EXPENSE -->
-      <div class="summary-card expense-card">
-        <div class="card-top">
-          <div>
-            <p class="card-label">ចំណាយសរុបតាមប្រភេទ</p>
-            <h2 class="card-value">
-              {{ dashboard.expenseCount }}
-            </h2>
-          </div>
-
-          <div class="card-icon expense-icon">
-            <i class="bi bi-wallet2"></i>
-          </div>
-        </div>
-
-        <div class="card-bottom">
-          <span class="growth negative">
-            <i class="bi bi-arrow-down-short"></i>
-            -3%
-          </span>
-
-          <span class="card-desc">
-            កាត់បន្ថយការចំណាយ
-          </span>
         </div>
       </div>
 
@@ -105,403 +75,275 @@
     <!-- CHARTS -->
     <div class="charts-grid">
 
-      <!-- LEFT -->
       <div class="chart-card">
         <div class="chart-header">
           <div>
             <h3>ចំណូល និង ចំណាយ</h3>
             <p>តាមប្រភេទប្រតិបត្តិការ</p>
           </div>
-
-          <div class="chart-badge green-badge">
-            Overview
-          </div>
         </div>
 
-        <SpendingChart />
+        <TrendChart />
       </div>
 
-      <!-- RIGHT -->
       <div class="chart-card">
         <div class="chart-header">
           <div>
             <h3>សកម្មភាពអ្នកប្រើប្រាស់</h3>
             <p>ស្ថិតិប្រចាំសប្តាហ៍</p>
           </div>
-
-          <div class="chart-badge blue-badge">
-            Weekly
-          </div>
         </div>
 
-        <TrendChart />
+        <SpendingChart />
       </div>
-
-     
 
     </div>
-     <div class="ListUser">
-        <ListUser />
-      </div>
+
+    <!-- TABLE -->
+    <div class="table-wrapper">
+      <ListUser />
+    </div>
+
   </div>
 </template>
 
 <script setup>
-import { onMounted, computed } from "vue"
-import { useDashboardStore } from "@/stores/dashboardStore"
+import { onMounted, computed } from "vue";
+import { useDashboardStore } from "@/stores/dashboardStore";
+import { useCategoryStore } from "@/stores/categoryStore";
 
-import SpendingChart from "@/components/ui/base/SpendingChart.vue"
-import TrendChart from "@/components/ui/base/TrendChart.vue"
-import ListUser from "@/components/ui/base/ListUser.vue"
+import SpendingChart from "@/components/ui/base/SpendingChart.vue";
+import TrendChart from "@/components/ui/base/TrendChart.vue";
+import ListUser from "@/components/ui/base/ListUser.vue";
 
-const dashboard = useDashboardStore()
+const dashboard = useDashboardStore();
+const totalAllCategories = useCategoryStore();
 
-onMounted(() => {
-  dashboard.fetchDashboard()
-})
+onMounted(async () => {
+  await dashboard.fetchDashboard();
+  await totalAllCategories.fetchTotalCategories();
+});
 
-const today = computed(() => {
-  return new Date().toLocaleDateString("km-KH", {
+const today = computed(() =>
+  new Date().toLocaleDateString("km-KH", {
     year: "numeric",
     month: "long",
     day: "numeric",
   })
-})
+);
 </script>
 
 <style scoped>
 .dashboard {
+  min-height: 100vh;
   padding: 24px;
-  border-radius: 28px;
+  font-family: "Kantumruy Pro", sans-serif;
 
   background:
-    linear-gradient(
-      135deg,
-      #f7faf7 0%,
-      #eef7f0 50%,
-      #f8fbff 100%
-    );
-
-  min-height: 100vh;
-
-  font-family:
-    "Kantumruy Pro",
-    "Khmer OS",
-    sans-serif;
+    radial-gradient(circle at 10% 10%, #dbeafe 0%, transparent 35%),
+    radial-gradient(circle at 90% 20%, #c7d2fe 0%, transparent 40%),
+    radial-gradient(circle at 50% 100%, #e0e7ff 0%, transparent 40%),
+    #f8fafc;
 }
 
 /* HEADER */
-.dashboard-header {
+.header-card {
   display: flex;
   justify-content: space-between;
   align-items: center;
 
-  margin-bottom: 28px;
+  padding: 22px;
+  border-radius: 20px;
+
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+
+  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.25);
 }
 
 .dashboard-title {
+  font-size: 28px;
+  font-weight: 800;
   margin: 0;
-  font-size: 30px;
-  font-weight: 700;
-  color: #111827;
 }
 
 .dashboard-subtitle {
-  margin-top: 6px;
-  color: #6b7280;
-  font-size: 14px;
+  font-size: 13px;
+  opacity: 0.8;
 }
 
-.dashboard-date {
+.date-chip {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 
-  background: white;
+  padding: 10px 14px;
+  border-radius: 999px;
 
-  padding: 12px 18px;
-
-  border-radius: 14px;
-
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-
-  font-size: 14px;
-  color: #374151;
+  background: rgba(255,255,255,0.15);
 }
 
-/* TOP CARDS */
-.top-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 22px;
-
-  margin-bottom: 28px;
-}
-
-.summary-card {
-  position: relative;
-
-  overflow: hidden;
+/* HERO */
+.hero-banner {
+  margin-top: 20px;
+  padding: 28px;
 
   border-radius: 24px;
 
-  padding: 24px;
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  color: white;
+}
 
-  background: rgba(255,255,255,0.92);
+.hero-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
 
-  backdrop-filter: blur(12px);
+.hero-text h1 {
+  font-size: 32px;
+  margin: 12px 0;
+}
 
-  border: 1px solid rgba(255,255,255,0.7);
+.hero-text p {
+  opacity: 0.8;
+  line-height: 1.6;
+  max-width: 500px;
+}
 
-  box-shadow:
-    0 8px 24px rgba(0,0,0,0.06);
+.hero-image img {
+  width: 260px;
+  animation: float 3s ease-in-out infinite;
+}
 
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease;
+/* FLOAT */
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+
+/* CARDS */
+.top-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.summary-card {
+  padding: 22px;
+  border-radius: 20px;
+
+  background: white;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+
+  transition: 0.3s;
 }
 
 .summary-card:hover {
   transform: translateY(-4px);
-
-  box-shadow:
-    0 14px 32px rgba(0,0,0,0.08);
-}
-
-.summary-card::before {
-  content: "";
-
-  position: absolute;
-
-  top: -40px;
-  right: -40px;
-
-  width: 120px;
-  height: 120px;
-
-  border-radius: 50%;
-
-  opacity: 0.08;
-}
-
-.users-card::before {
-  background: #2563eb;
-}
-
-.income-card::before {
-  background: #16a34a;
-}
-
-.expense-card::before {
-  background: #dc2626;
 }
 
 .card-top {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
 }
 
 .card-label {
-  margin: 0;
-
-  font-size: 14px;
-  color: #6b7280;
+  font-size: 13px;
+  color: #64748b;
 }
 
 .card-value {
-  margin: 14px 0 0;
-
-  font-size: 38px;
-  font-weight: 700;
-
-  color: #111827;
+  font-size: 36px;
+  font-weight: 800;
 }
 
 .card-icon {
-  width: 58px;
-  height: 58px;
-
-  border-radius: 18px;
+  width: 56px;
+  height: 56px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
+  border-radius: 14px;
   color: white;
-
-  font-size: 24px;
-
-  flex-shrink: 0;
 }
 
 .users-icon {
-  background:
-    linear-gradient(
-      135deg,
-      #3b82f6,
-      #2563eb
-    );
+  background: #2563eb;
 }
 
-.income-icon {
-  background:
-    linear-gradient(
-      135deg,
-      #22c55e,
-      #16a34a
-    );
-}
-
-.expense-icon {
-  background:
-    linear-gradient(
-      135deg,
-      #ef4444,
-      #dc2626
-    );
-}
-
-.card-bottom {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  margin-top: 20px;
-}
-
-.growth {
-  display: flex;
-  align-items: center;
-
-  padding: 4px 10px;
-
-  border-radius: 999px;
-
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.positive {
-  background: #dcfce7;
-  color: #15803d;
-}
-
-.negative {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
-.card-desc {
-  color: #6b7280;
-  font-size: 13px;
+.category-icon {
+  background: #7c3aed;
 }
 
 /* CHARTS */
 .charts-grid {
   display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: 24px;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 20px;
+
+  margin-top: 24px;
 }
 
 .chart-card {
-  background: rgba(255,255,255,0.95);
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
 
-  border-radius: 26px;
-
-  padding: 24px;
-
-  border: 1px solid rgba(255,255,255,0.7);
-
-  box-shadow:
-    0 8px 24px rgba(0,0,0,0.06);
-
-  backdrop-filter: blur(12px);
-
-  overflow: hidden;
-}
-
-.chart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  margin-bottom: 22px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
 }
 
 .chart-header h3 {
   margin: 0;
-
-  font-size: 18px;
-  font-weight: 700;
-
-  color: #111827;
 }
 
 .chart-header p {
-  margin-top: 6px;
-
-  color: #6b7280;
-  font-size: 13px;
-}
-
-.chart-badge {
-  padding: 8px 14px;
-
-  border-radius: 999px;
-
   font-size: 12px;
-  font-weight: 600;
+  color: #64748b;
 }
 
-.green-badge {
-  background: #dcfce7;
-  color: #15803d;
+/* TABLE */
+.table-wrapper {
+  margin-top: 24px;
+  background: white;
+  padding: 18px;
+  border-radius: 20px;
 }
 
-.blue-badge {
-  background: #dbeafe;
-  color: #1d4ed8;
-}
-
-/* MOBILE */
-@media (max-width: 1100px) {
+/* RESPONSIVE */
+@media (max-width: 1024px) {
   .charts-grid {
     grid-template-columns: 1fr;
   }
+
+  .hero-content {
+    flex-direction: column;
+    text-align: center;
+  }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .top-cards {
     grid-template-columns: 1fr;
   }
 
-  .dashboard-header {
+  .header-card {
     flex-direction: column;
     align-items: flex-start;
-    gap: 16px;
-  }
-}
-
-@media (max-width: 640px) {
-  .dashboard {
-    padding: 16px;
+    gap: 12px;
   }
 
-  .summary-card {
-    padding: 20px;
-  }
-
-  .card-value {
-    font-size: 30px;
-  }
-
-  .chart-card {
-    padding: 18px;
+  .hero-image img {
+    width: 200px;
   }
 
   .dashboard-title {
-    font-size: 24px;
+    font-size: 22px;
   }
 }
 </style>
