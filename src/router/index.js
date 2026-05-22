@@ -105,15 +105,12 @@ const router = createRouter({
           name: 'user',
           component: UserView,
           meta: { title: 'User', requiresAuth: true },
-          children: [
-            {
-              path: 'detailuser',
-              name: 'detailuser',
-              component : DetailUser,
-              meta: { title: 'DetailUser', requiresAuth: true },
-            }
-          ]
         },
+       {
+          path: '/detail-user/:id',
+          name: 'detailuser',
+          component: DetailUser
+        }
       ],
     },
 
