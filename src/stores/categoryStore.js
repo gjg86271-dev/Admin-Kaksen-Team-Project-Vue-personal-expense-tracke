@@ -52,6 +52,17 @@ export const useCategoryStore = defineStore('category', () => {
     }
   }
 
+const totalCategories = ref(0)
+
+async function fetchTotalCategories() {
+  const res = await api.get('/categories')
+
+  totalCategories.value =
+    res.data?.data?.meta?.totalItems ?? 0
+}
+
+
+
   // ── GET BY ID ─────────────────────────────────────────────────────────────
   async function getCategoryById(id) {
     try {
@@ -164,5 +175,7 @@ export const useCategoryStore = defineStore('category', () => {
     expenseCategories,
     systemCategories,
     userCategories,
+    totalCategories,
+    fetchTotalCategories
   }
 })

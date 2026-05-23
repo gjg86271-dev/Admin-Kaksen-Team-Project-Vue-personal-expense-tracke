@@ -52,12 +52,12 @@
             <span>តម្រង</span>
           </div>
           <div class="filter-selects">
-            <select class="filter-select" v-model="filterType">
+            <select class="filter-select" v-model="filterType" @change="onFilterChange">
               <option value="">ប្រភេទទាំងអស់</option>
               <option value="INCOME">ចំណូល</option>
               <option value="EXPENSE">ចំណាយ</option>
             </select>
-            <select class="filter-select" v-model="filterSystem">
+            <select class="filter-select" v-model="filterSystem" @change="onFilterChange">
               <option value="">ទាំងអស់</option>
               <option value="true">System</option>
               <option value="false">Custom</option>
@@ -71,8 +71,9 @@
               placeholder="ស្វែងរក..."
               @focus="searchFocused = true"
               @blur="searchFocused = false"
+              @input="onSearchInput"
             />
-            <button v-if="searchQuery" class="clear-btn" @click="searchQuery = ''">
+            <button v-if="searchQuery" class="clear-btn" @click="clearSearch">
               <i class="bi bi-x"></i>
             </button>
           </div>
@@ -85,15 +86,15 @@
         <div v-if="hasFilter" class="active-filters">
           <span v-if="filterType" class="filter-badge">
             {{ filterType === 'INCOME' ? 'ចំណូល' : 'ចំណាយ' }}
-            <i class="bi bi-x" @click="filterType = ''"></i>
+            <i class="bi bi-x" @click="filterType = ''; onFilterChange()"></i>
           </span>
           <span v-if="filterSystem !== ''" class="filter-badge">
             {{ filterSystem === 'true' ? 'System' : 'Custom' }}
-            <i class="bi bi-x" @click="filterSystem = ''"></i>
+            <i class="bi bi-x" @click="filterSystem = ''; onFilterChange()"></i>
           </span>
           <span v-if="searchQuery" class="filter-badge">
             "{{ searchQuery }}"
-            <i class="bi bi-x" @click="searchQuery = ''"></i>
+            <i class="bi bi-x" @click="clearSearch"></i>
           </span>
         </div>
       </div>
@@ -105,7 +106,7 @@
       </div>
 
       <!-- EMPTY -->
-      <div v-else-if="filteredItems.length === 0" class="empty-state">
+      <div v-else-if="pagedItems.length === 0" class="empty-state">
         <i class="bi bi-inbox fs-1 d-block mb-2"></i>
         <p class="mb-3">គ្មានប្រភេទ</p>
         <button class="btn btn-primary rounded-5 px-4" @click="openModal()">
@@ -127,27 +128,25 @@
             </tr>
           </thead>
           <tbody>
-            <tr class="text-center align-middle" v-for="(item, index) in filteredItems" :key="item.id">
-              <td class="text-muted">{{ index + 1 }}</td>
+            <tr class="text-center align-middle" v-for="(item, index) in pagedItems" :key="item.id">
+              <td class="text-muted">{{ (currentPage - 1) * perPage + index + 1 }}</td>
               <td class="fw-semibold">{{ item.name }}</td>
               <td>
-                <span :class="item.type === 'INCOME'
-                  ? 'badge bg-success-subtle text-success'
-                  : 'badge bg-danger-subtle text-danger'">
+                <span :class="item.type === 'INCOME' ? 'type-badge type-badge--income' : 'type-badge type-badge--expense'">
                   <i :class="item.type === 'INCOME' ? 'bi bi-graph-up-arrow' : 'bi bi-graph-down-arrow'"></i>
                   {{ item.type === 'INCOME' ? 'ចំណូល' : 'ចំណាយ' }}
                 </span>
               </td>
               <td>
-                <span v-if="item.isSystem" class="badge bg-primary-subtle text-primary">
+                <span v-if="item.isSystem" class="type-badge type-badge--system">
                   <i class="bi bi-shield-fill"></i> System
                 </span>
-                <span v-else class="badge bg-secondary-subtle text-secondary">Custom</span>
+                <span v-else class="type-badge type-badge--custom">Custom</span>
               </td>
-              <td class="text-muted">{{ new Date(item.createdAt).toLocaleDateString('en-GB') }}</td>
+              <td class="text-muted">{{ formatDate(item.createdAt) }}</td>
               <td>
-                <button class="btn btn-sm action-btn-view"  @click="openDetailModal(item)"><i class="bi bi-eye"></i></button>
-                <button class="btn btn-sm action-btn-edit"  @click="openModal(item)"><i class="bi bi-pencil-square"></i></button>
+                <button class="btn btn-sm action-btn-view"   @click="openDetailModal(item)"><i class="bi bi-eye"></i></button>
+                <button class="btn btn-sm action-btn-edit"   @click="openModal(item)"><i class="bi bi-pencil-square"></i></button>
                 <button
                   class="btn btn-sm action-btn-delete"
                   @click="confirmDelete(item)"
@@ -161,8 +160,8 @@
       </div>
 
       <!-- MOBILE CARDS -->
-      <div v-if="!loading && filteredItems.length > 0" class="d-md-none">
-        <div v-for="item in filteredItems" :key="item.id" class="mobile-card">
+      <div v-if="!loading && pagedItems.length > 0" class="d-md-none">
+        <div v-for="item in pagedItems" :key="item.id" class="mobile-card">
           <div class="mobile-card__left">
             <div :class="['mobile-icon', item.type === 'INCOME' ? 'icon--income' : 'icon--expense']">
               <i :class="item.type === 'INCOME' ? 'bi bi-graph-up-arrow' : 'bi bi-graph-down-arrow'"></i>
@@ -177,9 +176,7 @@
                   <i class="bi bi-shield-fill"></i> System
                 </span>
               </div>
-              <div class="mobile-card__date">
-                {{ new Date(item.createdAt).toLocaleDateString('en-GB') }}
-              </div>
+              <div class="mobile-card__date">{{ formatDate(item.createdAt) }}</div>
             </div>
           </div>
           <div class="mobile-card__actions">
@@ -190,7 +187,7 @@
         </div>
       </div>
 
-      <!-- PAGINATION -->
+      <!-- PAGINATION — client-side, driven by filteredItems -->
       <div v-if="totalPages > 1" class="d-flex justify-content-center mt-4">
         <Pagination v-model:currentPage="currentPage" :total-pages="totalPages" :sibling-count="1" />
       </div>
@@ -216,6 +213,7 @@
               <div v-if="formError" class="form-alert">
                 <i class="bi bi-exclamation-circle-fill"></i> {{ formError }}
               </div>
+              <!-- Name field — always shown -->
               <div class="field-group">
                 <label class="field-label">ឈ្មោះប្រភេទ <span class="required">*</span></label>
                 <div class="input-shell" :class="{ 'is-invalid': errors.name }">
@@ -234,7 +232,8 @@
                 </div>
                 <span class="char-count">{{ form.name.length }}/50</span>
               </div>
-              <div v-if="!isEditing" class="field-group">
+              <!-- Type toggle — only for CREATE; hidden when editing -->
+              <div v-if="!isEditing" class="field-group mb-0">
                 <label class="field-label">ប្រភេទ <span class="required">*</span></label>
                 <div class="type-toggle">
                   <button
@@ -252,25 +251,11 @@
                   <i class="bi bi-exclamation-circle"></i> {{ errors.type }}
                 </div>
               </div>
-              <div v-if="!isEditing" class="field-group mb-0">
-                <div class="system-toggle">
-                  <div class="system-toggle__info">
-                    <i class="bi bi-shield-fill text-primary"></i>
-                    <div>
-                      <div class="system-toggle__label">ប្រភេទ System</div>
-                      <div class="system-toggle__desc">System category មិនអាចលុបបាន</div>
-                    </div>
-                  </div>
-                  <div class="form-check form-switch mb-0">
-                    <input class="form-check-input" type="checkbox" id="isSystemCheck" v-model="form.isSystem" />
-                    <label class="form-check-label" for="isSystemCheck"></label>
-                  </div>
-                </div>
-              </div>
+              <!-- isSystem toggle removed from form per requirements -->
             </div>
             <div class="swal-footer">
-              <button class="swal-btn swal-btn--cancel"  @click="closeModal"    :disabled="saveLoading">បោះបង់</button>
-              <button class="swal-btn swal-btn--confirm" @click="saveCategory"  :disabled="saveLoading">
+              <button class="swal-btn swal-btn--cancel"  @click="closeModal"   :disabled="saveLoading">បោះបង់</button>
+              <button class="swal-btn swal-btn--confirm" @click="saveCategory" :disabled="saveLoading">
                 <span v-if="saveLoading" class="btn-spinner"></span>
                 <i v-else :class="isEditing ? 'bi bi-check-lg' : 'bi bi-plus-lg'"></i>
                 {{ saveLoading ? 'កំពុងរក្សាទុក...' : isEditing ? 'រក្សាទុក' : 'បង្កើត' }}
@@ -321,33 +306,32 @@
                 </div>
                 <div class="detail-row">
                   <span class="detail-row__label"><i class="bi bi-bar-chart-fill"></i> លក្ខណៈ</span>
-                  <span :class="detailItem.type === 'INCOME'
-                    ? 'badge bg-success-subtle text-success'
-                    : 'badge bg-danger-subtle text-danger'">
+                  <span :class="detailItem.type === 'INCOME' ? 'type-badge type-badge--income' : 'type-badge type-badge--expense'">
                     <i :class="detailItem.type === 'INCOME' ? 'bi bi-graph-up-arrow' : 'bi bi-graph-down-arrow'"></i>
                     {{ detailItem.type === 'INCOME' ? 'ចំណូល' : 'ចំណាយ' }}
                   </span>
                 </div>
                 <div class="detail-row">
                   <span class="detail-row__label"><i class="bi bi-shield-fill"></i> System</span>
-                  <span v-if="detailItem.isSystem" class="badge bg-primary-subtle text-primary">
+                  <span v-if="detailItem.isSystem" class="type-badge type-badge--system">
                     <i class="bi bi-shield-fill"></i> System
                   </span>
-                  <span v-else class="badge bg-secondary-subtle text-secondary">Custom</span>
+                  <span v-else class="type-badge type-badge--custom">Custom</span>
                 </div>
                 <div class="detail-row">
                   <span class="detail-row__label"><i class="bi bi-calendar3"></i> បង្កើតនៅ</span>
-                  <span class="detail-row__value">{{ new Date(detailItem.createdAt).toLocaleDateString('en-GB') }}</span>
+                  <span class="detail-row__value">{{ formatDate(detailItem.createdAt) }}</span>
                 </div>
                 <div class="detail-row" v-if="detailItem.updatedAt">
                   <span class="detail-row__label"><i class="bi bi-calendar-check"></i> កែប្រែចុងក្រោយ</span>
-                  <span class="detail-row__value">{{ new Date(detailItem.updatedAt).toLocaleDateString('en-GB') }}</span>
+                  <span class="detail-row__value">{{ formatDate(detailItem.updatedAt) }}</span>
                 </div>
               </div>
             </div>
             <div class="swal-footer">
-              <button class="swal-btn swal-btn--cancel"  @click="closeDetailModal">បិទ</button>
-              <button class="swal-btn swal-btn--confirm" @click="closeDetailModal(); openModal(detailItem)">
+              <button class="swal-btn swal-btn--cancel" @click="closeDetailModal">បិទ</button>
+              <!-- Fix: was passing ref object; now passes .value snapshot -->
+              <button class="swal-btn swal-btn--confirm" @click="editFromDetail">
                 <i class="bi bi-pencil-square"></i> កែប្រែ
               </button>
             </div>
@@ -417,6 +401,7 @@ const detailLoading = ref(false)
 const errors    = reactive({})
 const formError = ref('')
 
+// ── TOAST ──────────────────────────────────────────
 const toast = reactive({ show: false, type: 'success', message: '' })
 let toastTimer = null
 
@@ -428,28 +413,27 @@ function showToast(message, type = 'success') {
   toastTimer    = setTimeout(() => { toast.show = false }, 3000)
 }
 
+// ── DATA ───────────────────────────────────────────
+// allCategories reflects EVERYTHING fetched — used for counts + client-side filter
 const allCategories = computed(() =>
   Array.isArray(categoryStore.categories) ? categoryStore.categories : []
 )
 
-const totalCount   = computed(() => allCategories.value.length)
+// Fix 3: counts come from allCategories (all items), not just the current page
+const totalCount   = computed(() => categoryStore.meta?.totalItems ?? allCategories.value.length)
 const incomeCount  = computed(() => allCategories.value.filter(c => c.type === 'INCOME').length)
 const expenseCount = computed(() => allCategories.value.filter(c => c.type === 'EXPENSE').length)
 
+// ── FILTERS ────────────────────────────────────────
 const filterType    = ref('')
 const filterSystem  = ref('')
 const searchQuery   = ref('')
 const searchFocused = ref(false)
+let   searchTimer   = null
 
 const hasFilter = computed(() =>
   filterType.value || filterSystem.value !== '' || searchQuery.value
 )
-
-function resetFilters() {
-  filterType.value   = ''
-  filterSystem.value = ''
-  searchQuery.value  = ''
-}
 
 const filteredItems = computed(() =>
   allCategories.value.filter(item => {
@@ -460,11 +444,43 @@ const filteredItems = computed(() =>
   })
 )
 
-const currentPage = ref(categoryStore.params?._page ?? 1)
-const totalPages  = computed(() => categoryStore.meta?.totalPages ?? 1)
+// ── CLIENT-SIDE PAGINATION ─────────────────────────
+// Fix 1 & 2: pagination is purely client-side over filteredItems.
+// currentPage was using categoryStore.params?._page which may be undefined.
+// watch was calling goToPage but never fetchCategories → pages didn't load.
+const perPage     = 10
+const currentPage = ref(1)
 
-watch(currentPage, page => categoryStore.goToPage(page))
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredItems.value.length / perPage)))
 
+const pagedItems = computed(() => {
+  const start = (currentPage.value - 1) * perPage
+  return filteredItems.value.slice(start, start + perPage)
+})
+
+// Reset to page 1 whenever filters change
+watch(filteredItems, () => { currentPage.value = 1 })
+
+function onFilterChange() { currentPage.value = 1 }
+
+function onSearchInput() {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => { currentPage.value = 1 }, 300)
+}
+
+function clearSearch() {
+  searchQuery.value = ''
+  currentPage.value = 1
+}
+
+function resetFilters() {
+  filterType.value   = ''
+  filterSystem.value = ''
+  searchQuery.value  = ''
+  currentPage.value  = 1
+}
+
+// ── MODALS STATE ───────────────────────────────────
 const showModal       = ref(false)
 const isEditing       = ref(false)
 const showDeleteModal = ref(false)
@@ -472,13 +488,15 @@ const showDetailModal = ref(false)
 const selectedItem    = ref(null)
 const detailItem      = ref(null)
 
-const form = reactive({ name: '', type: 'EXPENSE', isSystem: false })
+// Fix 4: type defaults to '' so user must actively choose; not pre-selected
+// Fix 5: isSystem removed from form entirely
+const form = reactive({ name: '', type: '', isSystem: false })
 
 function validate() {
   Object.keys(errors).forEach(k => delete errors[k])
   formError.value = ''
-  if (!form.name.trim())              errors.name = 'សូមបញ្ចូលឈ្មោះប្រភេទ'
-  if (!isEditing.value && !form.type) errors.type = 'សូមជ្រើសប្រភេទ'
+  if (!form.name.trim())                    errors.name = 'សូមបញ្ចូលឈ្មោះប្រភេទ'
+  if (!isEditing.value && !form.type)       errors.type = 'សូមជ្រើសប្រភេទ'
   return Object.keys(errors).length === 0
 }
 
@@ -489,14 +507,14 @@ function openModal(item = null) {
   if (item) {
     isEditing.value    = true
     selectedItem.value = item
-    form.name          = item.name     || ''
-    form.type          = item.type     || 'EXPENSE'
+    form.name          = item.name || ''
+    form.type          = item.type || ''
     form.isSystem      = item.isSystem || false
   } else {
     isEditing.value    = false
     selectedItem.value = null
     form.name          = ''
-    form.type          = 'EXPENSE'
+    form.type          = ''   // Fix 4: no default — user must choose
     form.isSystem      = false
   }
 }
@@ -510,8 +528,7 @@ async function openDetailModal(item) {
   try {
     const result     = await categoryStore.getCategoryById(item.id)
     detailItem.value = result ?? item
-  } catch (err) {
-    console.error('Detail fetch error:', err)
+  } catch {
     detailItem.value = item
   } finally {
     detailLoading.value = false
@@ -523,13 +540,21 @@ function closeDetailModal() {
   detailItem.value      = null
 }
 
+// Fix 7: was `openModal(detailItem)` — passing a ref, not the value
+function editFromDetail() {
+  const item = detailItem.value
+  closeDetailModal()
+  openModal(item)
+}
+
 async function saveCategory() {
   if (!validate()) return
   saveLoading.value = true
   try {
     const result = isEditing.value && selectedItem.value?.id
       ? await categoryStore.updateCategory(selectedItem.value.id, { name: form.name.trim() })
-      : await categoryStore.createCategory({ name: form.name.trim(), type: form.type, isSystem: form.isSystem })
+      : await categoryStore.createCategory({ name: form.name.trim(), type: form.type })
+      // Fix 5: isSystem not sent — backend decides, not the form
 
     if (result?.success !== false) {
       closeModal()
@@ -538,8 +563,7 @@ async function saveCategory() {
     } else {
       formError.value = result?.message || 'មានបញ្ហា សូមព្យាយាមម្តងទៀត'
     }
-  } catch (err) {
-    console.error('Save error:', err)
+  } catch {
     formError.value = 'មានបញ្ហាក្នុងការរក្សាទុក'
   } finally {
     saveLoading.value = false
@@ -552,28 +576,35 @@ function confirmDelete(item) {
   showDeleteModal.value = true
 }
 
-function closeDeleteModal() { showDeleteModal.value = false }
+function closeDeleteModal() {
+  showDeleteModal.value = false
+  selectedItem.value    = null
+}
 
+// Fix 6: toast now only fires after fetch succeeds; error path is separate
 async function doDelete() {
   if (!selectedItem.value?.id) return
   deleteLoading.value = true
   try {
     const result = await categoryStore.deleteCategory(selectedItem.value.id)
+    if (result?.success === false) {
+      showToast(result?.message || 'លុបបានបរាជ័យ', 'error')
+      return
+    }
     closeDeleteModal()
     await categoryStore.fetchCategories()
-    if (result?.success !== false) {
-      showToast('បានលុបប្រភេទដោយជោគជ័យ!')
-    } else {
-      showToast(result?.message || 'លុបបានបរាជ័យ', 'error')
-    }
-  } catch (err) {
-    console.error('Delete error:', err)
+    showToast('បានលុបប្រភេទដោយជោគជ័យ!')
+  } catch {
     showToast('មានបញ្ហាក្នុងការលុប', 'error')
   } finally {
     deleteLoading.value = false
   }
 }
 
+// ── HELPERS ────────────────────────────────────────
+const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-GB') : ''
+
+// ── INIT ───────────────────────────────────────────
 onMounted(async () => {
   loading.value = true
   await categoryStore.fetchCategories()
@@ -723,7 +754,64 @@ onMounted(async () => {
 .empty-state { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
 
 /* ── TABLE ────────────────────────────────────────── */
-.table-wrap { border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
+.table-wrap {
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+}
+
+/* Override Bootstrap table colors with CSS variables */
+.table > :not(caption) > * > * {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  border-bottom-color: var(--border-color);
+}
+
+.table thead.table-secondary > tr > th {
+  background-color: var(--bg-input);
+  color: var(--text-secondary);
+  border-bottom: 2px solid var(--border-color);
+  font-weight: 600;
+}
+
+.table tbody tr:hover > * { background-color: var(--bg-input); }
+
+/* ── TYPE / SYSTEM BADGES (CSS-variable based) ─────── */
+.type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 12px;
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.type-badge--income {
+  background: var(--color-success-light);
+  color: var(--color-success);
+  border: 1px solid var(--color-success);
+}
+
+.type-badge--expense {
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+}
+
+.type-badge--system {
+  background: rgba(26, 98, 212, 0.10);
+  color: var(--color-primary);
+  border: 1px solid rgba(26, 98, 212, 0.25);
+}
+
+.type-badge--custom {
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
 
 /* ── MOBILE CARD ──────────────────────────────────── */
 .mobile-card {
@@ -934,17 +1022,6 @@ onMounted(async () => {
 .type-btn:hover { background: var(--bg-body); }
 .type-btn--income.active  { border-color: var(--color-success); background: var(--color-success-light); color: var(--color-success); }
 .type-btn--expense.active { border-color: var(--color-danger);  background: var(--color-danger-light);  color: var(--color-danger);  }
-
-.system-toggle {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  background: var(--bg-input);
-  border: 1.5px solid var(--border-color);
-  border-radius: 12px; padding: 12px 16px;
-}
-
-.system-toggle__info  { display: flex; align-items: center; gap: 10px; }
-.system-toggle__label { font-size: 13px; font-weight: 600; color: var(--text-primary); }
-.system-toggle__desc  { font-size: 11px; color: var(--text-secondary); }
 
 /* ── FOOTER ───────────────────────────────────────── */
 .swal-footer {

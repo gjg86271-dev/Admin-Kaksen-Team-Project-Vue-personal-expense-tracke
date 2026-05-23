@@ -10,14 +10,14 @@
     <!-- NAVIGATION -->
     <nav class="sidebar__nav">
 
-      <RouterLink to="/dashboard/home" class="sidebar__item" active-class="sidebar__item--active">
+         <RouterLink to="/dashboard/home" class="sidebar__item" active-class="sidebar__item--active">
         <i class="bi bi-grid sidebar__icon"></i>
         <span class="sidebar__label">ផ្ទាំងគ្រប់គ្រង</span>
       </RouterLink>
 
-      <RouterLink to="/dashboard/transactions" class="sidebar__item" active-class="sidebar__item--active">
+      <RouterLink to="/dashboard/user" class="sidebar__item" active-class="sidebar__item--active">
         <i class="bi bi-arrow-left-right sidebar__icon"></i>
-        <span class="sidebar__label">ប្រតិបត្តិការ</span>
+        <span class="sidebar__label">អ្នកប្រើប្រាស់</span>
       </RouterLink>
 
       <RouterLink to="/dashboard/category" class="sidebar__item" active-class="sidebar__item--active">
@@ -25,20 +25,6 @@
         <span class="sidebar__label">ប្រភេទ</span>
       </RouterLink>
 
-      <RouterLink to="/dashboard/report" class="sidebar__item" active-class="sidebar__item--active">
-        <i class="bi bi-bar-chart sidebar__icon"></i>
-        <span class="sidebar__label">របាយការណ៍</span>
-      </RouterLink>
-
-      <RouterLink to="/dashboard/budget" class="sidebar__item" active-class="sidebar__item--active">
-        <i class="bi bi-credit-card-2-front sidebar__icon"></i>
-        <span class="sidebar__label">ថវិកា</span>
-      </RouterLink>
-
-      <RouterLink to="/dashboard/goal" class="sidebar__item" active-class="sidebar__item--active">
-        <i class="bi bi-bullseye sidebar__icon"></i>
-        <span class="sidebar__label">គោលដៅ</span>
-      </RouterLink>
 
     </nav>
 
@@ -47,7 +33,7 @@
     <!-- LOGOUT -->
     <button class="sidebar__item sidebar__logout" @click="handleLogout">
       <i class="bi bi-box-arrow-right sidebar__icon"></i>
-      <span class="sidebar__label">ចាកចេញ</span>
+      <span class="sidebar__label text-denger">ចាកចេញ</span>
     </button>
 
   </aside>
@@ -101,6 +87,7 @@ async function handleLogout() {
   display: flex;
   flex-direction: column;
   transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease;
+  z-index: 9 !important;
 }
 
 .sidebar--collapsed {
