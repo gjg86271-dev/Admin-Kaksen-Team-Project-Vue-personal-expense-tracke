@@ -15,27 +15,27 @@ const getApiErrorMessage = (error, fallback) => {
 export const useAuthStore = defineStore("auth", () => {
 
   // ── State ──────────────────────────────────────────────
-  const token = ref(
-    localStorage.getItem("token") || sessionStorage.getItem("token") || null
-  )
+  const token = ref(localStorage.getItem("token") || null)
   const user = ref(null)
   const errorMsg = ref("")
   const resetToken = ref("")
-  const resetEmail = ref(sessionStorage.getItem("resetEmail") || "")
+  const resetEmail = ref(localStorage.getItem("resetEmail") || "")
 
   // ── Computed ───────────────────────────────────────────
   const isLogin = computed(() => !!token.value)
   const isAdmin = computed(() => {
-    const role = localStorage.getItem("role") || sessionStorage.getItem("role")
-    return role === "ADMIN"
+    return localStorage.getItem("role") === "ADMIN"
   })
 
   // ── Actions ────────────────────────────────────────────
   const setAuth = (data) => {
     user.value = data.user
     token.value = data.token
-    localStorage.setItem("token", data.token)
-    localStorage.setItem("role", data.user?.role ?? "")
+  }
+
+  const saveToken = (tokenValue) => {
+    token.value = tokenValue
+    localStorage.setItem("token", tokenValue)
   }
 
   const logout = () => {
@@ -44,53 +44,38 @@ export const useAuthStore = defineStore("auth", () => {
     errorMsg.value = ""
     localStorage.removeItem("token")
     localStorage.removeItem("role")
-    sessionStorage.removeItem("token")
-    sessionStorage.removeItem("role")
-    sessionStorage.removeItem("resetEmail")
+    localStorage.removeItem("resetEmail")
   }
 
   const login = async (data) => {
+    // rememberMe ignored — always persists to localStorage
     const { rememberMe, ...loginData } = data
     try {
-      // Step 1: Login ទទួល token
       const res = await api.post("/auth/login", loginData)
       const userToken = res.data.data.token
       const userData = res.data.data.user ?? null
 
-      // Step 2: ប្រើ token ទៅ GET /roles/1 ភ្លាមៗ
+      // Check role — ADMIN only
       const roleRes = await api.get("/roles/1", {
         headers: { Authorization: `Bearer ${userToken}` },
       })
-
       const roleName = roleRes.data?.data?.name ?? ""
 
-      // Step 3: Check — ADMIN ប៉ុណ្ណោះអាចចូល
       if (roleName !== "ADMIN") {
         errorMsg.value = "អ្នកមិនមានសិទ្ធិចូលប្រព័ន្ធនេះទេ"
         throw new Error("Unauthorized role")
       }
 
-      // Step 4: Save token + role
+      // Persist everything to localStorage
       token.value = userToken
       user.value = { ...userData, role: roleName }
-
-      if (rememberMe) {
-        localStorage.setItem("token", userToken)
-        localStorage.setItem("role", roleName)
-        sessionStorage.removeItem("token")
-        sessionStorage.removeItem("role")
-      } else {
-        sessionStorage.setItem("token", userToken)
-        sessionStorage.setItem("role", roleName)
-        localStorage.removeItem("token")
-        localStorage.removeItem("role")
-      }
+      localStorage.setItem("token", userToken)
+      localStorage.setItem("role", roleName)
 
       errorMsg.value = ""
       return res.data
 
     } catch (error) {
-      // មិន override errorMsg បើ role error
       if (error.message !== "Unauthorized role") {
         errorMsg.value = getApiErrorMessage(
           error,
@@ -155,7 +140,7 @@ export const useAuthStore = defineStore("auth", () => {
     try {
       const res = await api.post("/auth/forgot-password", data)
       resetEmail.value = data.email
-      sessionStorage.setItem("resetEmail", data.email)
+      localStorage.setItem("resetEmail", data.email)
       errorMsg.value = ""
       return res.data
     } catch (error) {
@@ -169,7 +154,7 @@ export const useAuthStore = defineStore("auth", () => {
       const res = await api.post("/auth/reset-password", data)
       resetToken.value = ""
       resetEmail.value = ""
-      sessionStorage.removeItem("resetEmail")
+      localStorage.removeItem("resetEmail")
       errorMsg.value = ""
       return res.data
     } catch (error) {

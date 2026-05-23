@@ -1,7 +1,7 @@
 <template>
   <div class="card border-0   ">
     <!-- HEADER -->
-    <div class="card-header bg-white border-0">
+    <div class="card-header border-0">
       <h3 class="card-title">
         សកម្មភាពអ្នកប្រើប្រាស់ប្រចាំសប្តាហ៍
       </h3>
@@ -221,7 +221,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .card {
-  background: #ffffff;
+  background: var(--bg-card);
   border-radius: 18px;
   padding: 1.25rem 1.5rem;
   
@@ -244,7 +244,7 @@ onBeforeUnmount(() => {
   font-weight: 700;
   margin: 0;
 
-  color: #111827;
+  color:var(--text-primary);
 
   font-family:
     'Kantumruy Pro',
@@ -280,7 +280,7 @@ onBeforeUnmount(() => {
   justify-content: center;
   gap: 12px;
 
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
@@ -288,7 +288,7 @@ onBeforeUnmount(() => {
   width: 20px;
   height: 20px;
 
-  border: 2px solid #e5e7eb;
+  border: 2px solid var(--border-primary);
   border-top-color: #2563eb;
 
   border-radius: 999px;

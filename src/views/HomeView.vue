@@ -2,30 +2,25 @@
   <div class="dashboard">
 
     <!-- HEADER -->
-    <div class="header-card">
-      <div>
-        <h1 class="dashboard-title">ផ្ទាំងគ្រប់គ្រង</h1>
-        <p class="dashboard-subtitle">
-          សង្ខេបទិន្នន័យ និងសកម្មភាពប្រព័ន្ធ
-        </p>
-      </div>
-
-      <div class="date-chip">
-        <i class="bi bi-calendar3"></i>
+    <div class="header-card mb-4">
+        <div>
+          <h1>ផ្ទាំងគ្រប់គ្រង</h1>
+          <p>សង្ខេបទិន្នន័យ និងសកម្មភាពប្រព័ន្ធ</p>
+        </div>
+        <div class="add-btn d-flex justify-content-center align-items-center">
+        <i class="bi bi-calendar3 me-2"></i>
         <span>{{ today }}</span>
       </div>
-    </div>
+      </div>
+
+    
 
     <!-- HERO -->
     <div class="hero-banner">
       <div class="hero-content">
         <div class="hero-text">
-          <span class="hero-badge">
-            <i class="bi bi-stars"></i>
-            Smart Dashboard
-          </span>
 
-          <h1>សូមស្វាគមន៍ការត្រឡប់មកវិញ 👋</h1>
+          <h1>សូមស្វាគមន៍ការត្រឡប់មកវិញ </h1>
 
           <p>
             តាមដានចំណូល ចំណាយ និងសកម្មភាពប្រព័ន្ធ
@@ -136,30 +131,11 @@ const today = computed(() =>
 <style scoped>
 .dashboard {
   min-height: 100vh;
-  padding: 24px;
+  /* padding: 24px; */
   font-family: "Kantumruy Pro", sans-serif;
-
-  background:
-    radial-gradient(circle at 10% 10%, #dbeafe 0%, transparent 35%),
-    radial-gradient(circle at 90% 20%, #c7d2fe 0%, transparent 40%),
-    radial-gradient(circle at 50% 100%, #e0e7ff 0%, transparent 40%),
-    #f8fafc;
+  background-color: transparent;
 }
-
 /* HEADER */
-.header-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  padding: 22px;
-  border-radius: 20px;
-
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: white;
-
-  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.25);
-}
 
 .dashboard-title {
   font-size: 28px;
@@ -180,7 +156,8 @@ const today = computed(() =>
   padding: 10px 14px;
   border-radius: 999px;
 
-  background: rgba(255,255,255,0.15);
+  /* background: rgba(255,255,255,0.15); */
+  background-color: #2563eb;
 }
 
 /* HERO */
@@ -190,8 +167,9 @@ const today = computed(() =>
 
   border-radius: 24px;
 
-  background: linear-gradient(135deg, #1e3a8a, #2563eb);
-  color: white;
+  /* background: linear-gradient(135deg, #1e3a8a, #2563eb); */
+  background-color: var(--bg-sidebar) ;
+  color: var(--text-white);
 }
 
 .hero-content {
@@ -210,6 +188,7 @@ const today = computed(() =>
   opacity: 0.8;
   line-height: 1.6;
   max-width: 500px;
+
 }
 
 .hero-image img {
@@ -223,6 +202,32 @@ const today = computed(() =>
   50% { transform: translateY(-10px); }
   100% { transform: translateY(0); }
 }
+.header-card {
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow);
+}
+
+.header-card h1 { font-size: 20px; font-weight: 700; margin: 0 0 2px; color: var(--text-white); }
+.header-card p  { font-size: 12px; margin: 0; color: var(--text-secondary) ; }
+
+.add-btn {
+  height: 46px;
+  padding: 0 20px;
+  font-size: 15px;
+  white-space: nowrap;
+  font-family: 'Kantumruy Pro', 'Khmer OS', sans-serif !important;
+  background: rgba(255,255,255,0.15);
+  color: var(--text-white);
+  border: 1.5px solid rgba(255,255,255,0.4);
+  border-radius: 12px;
+}
+
 
 /* CARDS */
 .top-cards {
@@ -236,7 +241,7 @@ const today = computed(() =>
   padding: 22px;
   border-radius: 20px;
 
-  background: white;
+  background-color: var(--bg-card);
   box-shadow: 0 8px 20px rgba(0,0,0,0.06);
 
   transition: 0.3s;
@@ -253,7 +258,7 @@ const today = computed(() =>
 
 .card-label {
   font-size: 13px;
-  color: #64748b;
+  color:var(--text-secondary);
 }
 
 .card-value {
@@ -270,7 +275,7 @@ const today = computed(() =>
   justify-content: center;
 
   border-radius: 14px;
-  color: white;
+  color: var(--text-primary);
 }
 
 .users-icon {
@@ -291,7 +296,7 @@ const today = computed(() =>
 }
 
 .chart-card {
-  background: white;
+  background: var(--bg-card);
   padding: 20px;
   border-radius: 20px;
 
@@ -304,15 +309,12 @@ const today = computed(() =>
 
 .chart-header p {
   font-size: 12px;
-  color: #64748b;
+  color: var(--text-secondary);
 }
 
 /* TABLE */
 .table-wrapper {
   margin-top: 24px;
-  background: white;
-  padding: 18px;
-  border-radius: 20px;
 }
 
 /* RESPONSIVE */

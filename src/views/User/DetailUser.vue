@@ -430,20 +430,22 @@ onMounted(async () => {
 /* ───────────────── PAGE ───────────────── */
 .detail-page {
   padding: 24px;
-  background: #f6f8fb;
+  background: var(--bg-body);
   min-height: 100vh;
 }
 
 .font {
-  font-family: 'Kantumruy Pro', sans-serif;
+  font-family: var(--font-khmer);
 }
 
 /* ───────────────── BACK BUTTON ───────────────── */
 .back-btn {
   border: none;
-  background: white;
+  background: var(--bg-card);
+  color: var(--text-primary);
+
   padding: 10px 18px;
-  border-radius: 14px;
+  border-radius: var(--radius);
 
   display: inline-flex;
   align-items: center;
@@ -452,14 +454,14 @@ onMounted(async () => {
   font-size: 14px;
   font-weight: 600;
 
-  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-  transition: 0.25s;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
 }
 
 .back-btn:hover {
   transform: translateY(-2px);
-  background: #f0f4ff;
-  color: #0d6efd;
+  background: var(--bg-input);
+  color: var(--color-primary);
 }
 
 /* ───────────────── LAYOUT ───────────────── */
@@ -478,12 +480,11 @@ onMounted(async () => {
 
 /* ───────────────── HERO CARD ───────────────── */
 .hero-card {
-  background: white;
+  background: var(--bg-card);
   border-radius: 24px;
   padding: 28px;
 
-  box-shadow:
-    0 10px 30px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow);
 
   position: relative;
   overflow: hidden;
@@ -492,6 +493,8 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   text-align: center;
+
+  color: var(--text-primary);
 }
 
 .hero-card::before {
@@ -502,12 +505,19 @@ onMounted(async () => {
 
   width: 100%;
   height: 5px;
+
+  background: linear-gradient(
+    90deg,
+    var(--color-primary),
+    var(--color-primary-hover)
+  );
 }
 
+/* ───────────────── HERO VARIANT ───────────────── */
 .hero--income::before {
   background: linear-gradient(
     90deg,
-    #16c47f,
+    var(--color-success),
     #65d6a6
   );
 }
@@ -515,7 +525,7 @@ onMounted(async () => {
 .hero--expense::before {
   background: linear-gradient(
     90deg,
-    #ff4d6d,
+    var(--color-danger),
     #ff758f
   );
 }
@@ -535,13 +545,13 @@ onMounted(async () => {
 }
 
 .hero--income .hero-icon {
-  background: rgba(22,196,127,0.12);
-  color: #16c47f;
+  background: var(--color-success-light);
+  color: var(--color-success);
 }
 
 .hero--expense .hero-icon {
-  background: rgba(255,77,109,0.12);
-  color: #ff4d6d;
+  background: var(--color-danger-light);
+  color: var(--color-danger);
 }
 
 /* ───────────────── BADGE ───────────────── */
@@ -556,13 +566,13 @@ onMounted(async () => {
 }
 
 .badge--income {
-  background: rgba(22,196,127,0.12);
-  color: #16c47f;
+  background: var(--color-success-light);
+  color: var(--color-success);
 }
 
 .badge--expense {
-  background: rgba(255,77,109,0.12);
-  color: #ff4d6d;
+  background: var(--color-danger-light);
+  color: var(--color-danger);
 }
 
 /* ───────────────── AMOUNT ───────────────── */
@@ -573,21 +583,23 @@ onMounted(async () => {
 }
 
 .amount--income {
-  color: #16c47f;
+  color: var(--color-success);
 }
 
 .amount--expense {
-  color: #ff4d6d;
+  color: var(--color-danger);
 }
 
 .hero-category {
   font-size: 18px;
   font-weight: 700;
   margin-bottom: 8px;
+
+  color: var(--text-primary);
 }
 
 .hero-date {
-  color: #6c757d;
+  color: var(--text-secondary);
   font-size: 14px;
 
   display: flex;
@@ -605,17 +617,18 @@ onMounted(async () => {
   border-radius: 18px;
   margin-top: 18px;
 
-  border: 1px solid #eee;
+  border: 1px solid var(--border-color);
 }
 
 /* ───────────────── RIGHT CARD ───────────────── */
 .detail-right {
-  background: white;
+  background: var(--bg-card);
   border-radius: 24px;
   padding: 28px;
 
-  box-shadow:
-    0 10px 30px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow);
+
+  color: var(--text-primary);
 }
 
 /* ───────────────── HEADER ───────────────── */
@@ -631,10 +644,12 @@ onMounted(async () => {
   font-size: 24px;
   font-weight: 800;
   margin: 0;
+
+  color: var(--text-primary);
 }
 
 .detail-subtitle {
-  color: #6c757d;
+  color: var(--text-secondary);
   margin-top: 4px;
 }
 
@@ -651,13 +666,14 @@ onMounted(async () => {
   border: none;
   border-radius: 14px;
 
-  background: #f5f7fb;
+  background: var(--bg-input);
+  color: var(--text-primary);
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  transition: 0.25s;
+  transition: var(--transition);
 }
 
 .action-btn i {
@@ -665,18 +681,18 @@ onMounted(async () => {
 }
 
 .action-btn--edit:hover {
-  background: #e7f1ff;
-  color: #0d6efd;
+  background: rgba(13, 110, 253, 0.12);
+  color: var(--color-primary);
 }
 
 .action-btn--delete:hover {
-  background: #ffe5ea;
-  color: #ff4d6d;
+  background: rgba(220, 38, 38, 0.12);
+  color: var(--color-danger);
 }
 
 /* ───────────────── INFO GRID ───────────────── */
 .info-grid {
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border-color);
 }
 
 .info-row {
@@ -684,7 +700,7 @@ onMounted(async () => {
   gap: 24px;
 
   padding: 18px 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .info-label {
@@ -692,7 +708,7 @@ onMounted(async () => {
   flex-shrink: 0;
 
   font-weight: 700;
-  color: #495057;
+  color: var(--text-secondary);
 
   display: flex;
   align-items: center;
@@ -700,12 +716,12 @@ onMounted(async () => {
 }
 
 .info-label i {
-  color: #0d6efd;
+  color: var(--color-primary);
 }
 
 .info-value {
   flex: 1;
-  color: #212529;
+  color: var(--text-primary);
 }
 
 .notes-value {
@@ -727,13 +743,13 @@ onMounted(async () => {
 }
 
 .chip--income {
-  background: rgba(22,196,127,0.12);
-  color: #16c47f;
+  background: var(--color-success-light);
+  color: var(--color-success);
 }
 
 .chip--expense {
-  background: rgba(255,77,109,0.12);
-  color: #ff4d6d;
+  background: var(--color-danger-light);
+  color: var(--color-danger);
 }
 
 /* ───────────────── ATTACHMENT PREVIEW ───────────────── */
@@ -744,14 +760,14 @@ onMounted(async () => {
   object-fit: cover;
 
   border-radius: 18px;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--border-color);
 
-  background: white;
+  background: var(--bg-card);
 
   display: block;
   margin-top: 10px;
 
-  transition: 0.3s;
+  transition: var(--transition);
 }
 
 .attachment-preview:hover {
@@ -763,10 +779,10 @@ onMounted(async () => {
   width: 240px;
   height: 170px;
 
-  border: 2px dashed #d6dbe3;
+  border: 2px dashed var(--border-color);
   border-radius: 18px;
 
-  background: #fafcff;
+  background: var(--bg-input);
 
   display: flex;
   align-items: center;
@@ -775,7 +791,7 @@ onMounted(async () => {
 
   gap: 10px;
 
-  color: #8a94a6;
+  color: var(--text-secondary);
 
   margin-top: 10px;
 }
@@ -790,9 +806,9 @@ onMounted(async () => {
   height: 170px;
 
   border-radius: 18px;
-  border: 1px solid #eee;
+  border: 1px solid var(--border-color);
 
-  background: white;
+  background: var(--bg-card);
 
   display: flex;
   align-items: center;
@@ -803,14 +819,14 @@ onMounted(async () => {
 
   margin-top: 10px;
 
-  color: #dc3545;
+  color: var(--color-danger);
   font-weight: 700;
 
-  transition: 0.25s;
+  transition: var(--transition);
 }
 
 .pdf-preview:hover {
-  background: #fff5f5;
+  background: var(--bg-input);
 }
 
 .pdf-preview i {
@@ -821,19 +837,25 @@ onMounted(async () => {
 .form-label {
   font-weight: 700;
   margin-bottom: 8px;
+
+  color: var(--text-primary);
 }
 
 .form-control,
 .form-select {
   border-radius: 14px;
   min-height: 48px;
-  border: 1px solid #dee2e6;
+
+  border: 1px solid var(--border-color);
+
+  background: var(--bg-card);
+  color: var(--text-primary);
 }
 
 .form-control:focus,
 .form-select:focus {
-  box-shadow: 0 0 0 4px rgba(13,110,253,0.12);
-  border-color: #0d6efd;
+  box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.12);
+  border-color: var(--color-primary);
 }
 
 /* ───────────────── STATE BOX ───────────────── */
@@ -844,5 +866,7 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   flex-direction: column;
+
+  color: var(--text-primary);
 }
 </style>

@@ -1,8 +1,7 @@
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
-// import { useAuthStore } from '@/stores/useAuth'
 import { useAuthStore } from '@/stores/authStore'
 import AuthTimelineSidebar from '@/components/auth/AuthTimelineSidebar.vue'
 
@@ -21,7 +20,7 @@ const firstQueryValue = (...values) => {
   return Array.isArray(value) ? value[0] : value
 }
 
-const initialToken = String(
+const token = String(
   firstQueryValue(
     route.query.token,
     route.query.reset_token,
@@ -31,19 +30,19 @@ const initialToken = String(
   ) || ''
 )
 
+if (!token) {
+  router.replace({ name: 'forgetPassword' })
+}
+
 const form = reactive({
-  token: initialToken,
   password: '',
   confirmPassword: '',
 })
 
 const errors = reactive({
-  token: '',
   password: '',
   confirmPassword: '',
 })
-
-const hasInitialToken = computed(() => Boolean(initialToken))
 
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
@@ -54,13 +53,8 @@ const clearError = (field) => {
 }
 
 const validateForm = () => {
-  errors.token = ''
   errors.password = ''
   errors.confirmPassword = ''
-
-  if (!form.token.trim()) {
-    errors.token = 'សូមបញ្ចូល Token របស់អ្នក'
-  }
 
   if (!form.password) {
     errors.password = 'សូមបញ្ចូលពាក្យសម្ងាត់ថ្មី'
@@ -74,7 +68,7 @@ const validateForm = () => {
     errors.confirmPassword = 'ពាក្យសម្ងាត់មិនត្រូវគ្នា'
   }
 
-  return !errors.token && !errors.password && !errors.confirmPassword
+  return !errors.password && !errors.confirmPassword
 }
 
 const submitResetPassword = async () => {
@@ -84,7 +78,7 @@ const submitResetPassword = async () => {
 
   try {
     const resetPayload = {
-      token: form.token.trim(),
+      token,
       newPassword: form.password,
     }
 
@@ -125,29 +119,13 @@ const submitResetPassword = async () => {
         <div class="icon-circle">
           <i class="bi bi-lock" aria-hidden="true"></i>
         </div>
-    
 
-        <h1 style="color:#042C83">ភ្លេចពាក្យសម្ងាត់?</h1>
-        <p class="subtitle ​">បង្កើតពាក្យសម្ងាត់ថ្មីសម្រាប់គណនីរបស់អ្នក</p>
+        <h1>ភ្លេចពាក្យសម្ងាត់?</h1>
+        <p class="subtitle">បង្កើតពាក្យសម្ងាត់ថ្មីសម្រាប់គណនីរបស់អ្នក</p>
 
         <form class="reset-form" @submit.prevent="submitResetPassword" novalidate>
-          <div class="field-group" v-if="!hasInitialToken">
-            <label class="field-label" for="reset-token">Token</label>
-            <div class="input-shell" :class="{ 'is-invalid': errors.token }">
-              <i class="bi bi-key field-icon" aria-hidden="true"></i>
-              <input
-                id="reset-token"
-                v-model.trim="form.token"
-                type="text"
-                autocomplete="one-time-code"
-                placeholder="បញ្ចូល Token"
-                :disabled="isLoading"
-                @input="clearError('token')"
-              />
-            </div>
-            <p v-if="errors.token" class="field-error">{{ errors.token }}</p>
-          </div>
 
+          <!-- New password -->
           <div class="field-group">
             <label class="field-label" for="new-password">ពាក្យសម្ងាត់ថ្មី</label>
             <div class="input-shell" :class="{ 'is-invalid': errors.password }">
@@ -157,7 +135,7 @@ const submitResetPassword = async () => {
                 v-model="form.password"
                 :type="showPassword ? 'text' : 'password'"
                 autocomplete="new-password"
-                placeholder="•••••••••"
+                placeholder="បញ្ចូលពាក្យសម្ងាត់ថ្មី"
                 :disabled="isLoading"
                 @input="clearError('password')"
               />
@@ -174,6 +152,7 @@ const submitResetPassword = async () => {
             <p v-if="errors.password" class="field-error">{{ errors.password }}</p>
           </div>
 
+          <!-- Confirm password -->
           <div class="field-group">
             <label class="field-label" for="confirm-password">បញ្ជាក់ពាក្យសម្ងាត់</label>
             <div class="input-shell" :class="{ 'is-invalid': errors.confirmPassword }">
@@ -183,7 +162,7 @@ const submitResetPassword = async () => {
                 v-model="form.confirmPassword"
                 :type="showConfirmPassword ? 'text' : 'password'"
                 autocomplete="new-password"
-                placeholder="•••••••••"
+                placeholder="បញ្ជាក់ពាក្យសម្ងាត់ម្តងទៀត"
                 :disabled="isLoading"
                 @input="clearError('confirmPassword')"
               />
@@ -206,8 +185,8 @@ const submitResetPassword = async () => {
 
           <button class="primary-button" type="submit" :disabled="isLoading">
             <span>{{ isLoading ? 'កំពុងរក្សាទុក...' : 'ត្រឡប់ទៅ​ចូលប្រើប្រាស់' }}</span>
-      
           </button>
+
         </form>
       </div>
     </section>
@@ -215,8 +194,6 @@ const submitResetPassword = async () => {
 </template>
 
 <style scoped>
-
-
 .reset-page {
   position: relative;
   min-height: 100vh;
@@ -232,7 +209,7 @@ const submitResetPassword = async () => {
 .reset-wrapper {
   display: flex;
   align-items: stretch;
-  width: min(100%, 760px);
+  width: min(100%, 780px);
   border-radius: 24px;
   overflow: hidden;
   box-shadow:
@@ -244,13 +221,15 @@ const submitResetPassword = async () => {
 .reset-card {
   flex: 1;
   min-width: 0;
-  padding: 40px 36px;
+  padding: 44px 40px;
   background: #ffffff;
 }
+
+/* Icon */
 .icon-circle {
   position: relative;
-  width: 68px;
-  height: 68px;
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -277,10 +256,10 @@ const submitResetPassword = async () => {
 .icon-circle::after {
   content: '';
   position: absolute;
-  right: 12px;
-  bottom: 12px;
-  width: 12px;
-  height: 12px;
+  right: 10px;
+  bottom: 10px;
+  width: 13px;
+  height: 13px;
   border: 2px solid #ffffff;
   border-radius: 50%;
   background: #22c55e;
@@ -290,94 +269,97 @@ const submitResetPassword = async () => {
 .icon-circle .bi {
   position: relative;
   z-index: 1;
-  font-size: 29px;
+  font-size: 28px;
   line-height: 1;
 }
 
-
+/* Title & subtitle */
 h1 {
   margin: 0;
   color: #151a2d;
-  font-size: 20px;
+  font-size: 26px;
   font-weight: 900;
   line-height: 1.25;
   text-align: center;
 }
 
 .subtitle {
-  margin: 7px 0 21px;
-  color: #9aa7bb;
-  font-size: 13px;
-  line-height: 1.5;
+  margin: 10px 0 26px;
+  color: #8b9bb0;
+  font-size: 15px;
+  line-height: 1.6;
   text-align: center;
 }
 
+/* Form */
 .reset-form {
   display: grid;
-  gap: 13px;
+  gap: 16px;
 }
 
 .field-group {
   min-width: 0;
-  margin-bottom: 16px;
 }
 
+/* Label */
 .field-label {
   display: block;
-  margin-bottom: 7px;
-  color: #111d35;
-  font-size: 13px;
-  font-weight: 500;
+  margin: 0 0 8px 4px;
+  color: #475569;
+  font-size: 15px;
+  font-weight: 700;
 }
 
+/* Input shell */
 .input-shell {
   display: flex;
   align-items: center;
-  height: 46px;
-  border: 1.5px solid #d0ddef;
-  border-radius: 50px;
+  height: 52px;
+  border: 1.5px solid #c4cdd9;
+  border-radius: 999px;
   padding: 0 16px;
-  background: #f7faff;
+  background: #f8fafc;
+  gap: 10px;
   transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
 }
 
 .input-shell:focus-within {
-  border-color: #2b65cc;
+  border-color: #2d57b7;
   background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(43,101,204,0.12);
+  box-shadow: 0 0 0 3px rgba(45, 87, 183, 0.12);
 }
 
 .input-shell.is-invalid {
   border-color: #ef4444;
-  background: #fee2e2;
+  background: #fff7f7;
 }
 
-.input-shell.is-invalid:focus-within {
-  border-color: #ef4444;
-  box-shadow: 0 0 0 3px rgba(239,68,68,0.14);
-}
-
+/* Icon inside input */
 .field-icon {
   flex-shrink: 0;
-  color: #7a8fae;
-  font-size: 15px;
+  color: #94a3b8;
+  font-size: 16px;
+  line-height: 1;
 }
 
+/* Input field */
 .input-shell input {
   flex: 1;
   min-width: 0;
+  width: 100%;
   height: 100%;
   border: 0;
   outline: 0;
-  padding: 0 10px;
-  color: #111d35;
+  padding: 0;
+  color: #1d2740;
   background: transparent;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .input-shell input::placeholder {
-  color: #b5c5dc;
+  color: #b7c3d3;
+  font-size: 14px;
 }
 
 .input-shell input:disabled {
@@ -385,97 +367,86 @@ h1 {
   opacity: 0.6;
 }
 
+/* Eye toggle */
 .eye-button {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 0;
   padding: 0;
-  color: #7a8fae;
+  color: #94a3b8;
   background: transparent;
-  font-size: 15px;
+  font-size: 16px;
   cursor: pointer;
   transition: color 0.15s;
 }
 
 .eye-button:hover:not(:disabled) {
-  color: #1a4faa;
+  color: #2d57b7;
 }
 
 .eye-button:disabled {
   cursor: not-allowed;
 }
 
+/* Error */
 .field-error {
-  margin: 7px 0 0;
+  margin: 6px 0 0 4px;
   color: #ef4444;
   font-size: 12px;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
+/* Forgot link */
 .login-help {
   width: max-content;
   max-width: 100%;
   color: #657996;
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 600;
   line-height: 1.4;
   text-decoration: none;
+  transition: color 0.18s;
 }
 
 .login-help:hover {
   color: #2d57b7;
 }
 
+/* Submit button */
 .primary-button {
   width: 100%;
-  height: 40px;
+  height: 52px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 18px;
+  gap: 10px;
   border: 0;
   border-radius: 999px;
   padding: 0 20px;
   color: #ffffff;
-  background: #2857bd;
-  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #2b65cc 0%, #1a4faa 100%);
+  box-shadow: 0 4px 16px rgba(26, 79, 170, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.15);
   font-family: inherit;
-  font-size: 15px;
-  font-weight: 900;
+  font-size: 16px;
+  font-weight: 800;
   cursor: pointer;
   transition: opacity 0.18s, transform 0.15s, box-shadow 0.18s;
 }
 
 .primary-button:hover:not(:disabled) {
+  opacity: 0.93;
   transform: translateY(-1px);
-  box-shadow:
-    inset 0 -2px 0 rgba(0, 0, 0, 0.1),
-    0 7px 18px rgba(40, 87, 189, 0.25);
+  box-shadow: 0 7px 22px rgba(26, 79, 170, 0.36);
 }
 
-.primary-button:disabled {
-  cursor: wait;
-  opacity: 0.66;
-}
+.primary-button:active:not(:disabled) { transform: translateY(0); }
+.primary-button:disabled { cursor: wait; opacity: 0.66; }
 
-.primary-button i {
-  font-size: 14px;
-}
-
-.spin {
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
+/* Responsive */
 @media (max-width: 900px) {
   .reset-page {
     align-items: flex-start;
@@ -488,7 +459,7 @@ h1 {
   }
 
   .reset-card {
-    padding: 28px 24px 25px;
+    padding: 32px 28px;
   }
 }
 
@@ -503,7 +474,15 @@ h1 {
   }
 
   .reset-card {
-    padding: 24px 20px 25px;
+    padding: 28px 20px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
+
+  .subtitle {
+    font-size: 14px;
   }
 }
 </style>

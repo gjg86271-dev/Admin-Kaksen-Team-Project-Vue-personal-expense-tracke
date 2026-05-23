@@ -1,26 +1,54 @@
 <template>
-    <div class="card border-0 shadow">
-        <div class="card-body">
-            <div class="card-header-row">
-                <div class="card-title">{{ title }}</div>
-                <div class="card-icon">
-                   <slot name="icon"></slot>
-                </div>
-            </div>
-            <div class="card-subtitle">{{ formattedValue }}</div>
-            <div class="card-text">
-            </div>
+  <div class="card border-0 shadow">
+
+    <div class="card-body">
+
+      <!-- HEADER -->
+      <div class="card-header-row">
+
+        <!-- TITLE -->
+        <div class="card-title">
+          {{ title }}
         </div>
+
+        <!-- ICON -->
+        <div class="card-icon">
+          <slot name="icon"></slot>
+        </div>
+
+      </div>
+
+      <!-- VALUE -->
+      <div class="card-subtitle">
+        {{ formattedValue }}
+      </div>
+
+      <!-- OPTIONAL TEXT -->
+      <div class="card-text">
+      </div>
+
     </div>
+  </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 
 const props = defineProps({
-  title: { type: String, default: '' },
-  value: { type: Number, default: 0 },
-  currency: { type: String, default: '' }
+  title: {
+    type: String,
+    default: ''
+  },
+
+  value: {
+    type: Number,
+    default: 0
+  },
+
+  currency: {
+    type: String,
+    default: ''
+  }
 })
 
 const formattedValue = computed(() => {
@@ -37,22 +65,25 @@ const formattedValue = computed(() => {
 
 /* ================= MAIN CARD ================= */
 .card {
-  border-radius: 16px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  border-radius: var(--radius);
 
-  /* 👇 RESPONSIVE WIDTH BASED ON SIDEBAR */
+  background: var(--bg-card);
+
+  border: 1px solid var(--border-color);
+
   width: calc(100% - var(--sidebar-width));
 
-  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+
+  transition: var(--transition);
 }
 
-/* when sidebar collapsed */
+/* ================= SIDEBAR COLLAPSED ================= */
 body.sidebar-collapsed .card {
   width: calc(100% - var(--sidebar-collapsed-width));
 }
 
-/* mobile fallback */
+/* ================= MOBILE ================= */
 @media (max-width: 992px) {
   .card {
     width: 100% !important;
@@ -62,8 +93,10 @@ body.sidebar-collapsed .card {
 /* ================= CARD BODY ================= */
 .card-body {
   padding: 20px;
+
   display: flex;
   flex-direction: column;
+
   gap: 6px;
 }
 
@@ -72,53 +105,137 @@ body.sidebar-collapsed .card {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+
+  gap: 14px;
 }
 
-/* TITLE */
+/* ================= TITLE ================= */
 .card-title {
   font-size: 16px;
   font-weight: 500;
-  color: #9ca3af;
-  font-family: 'Kantumruy Pro', 'Khmer OS', sans-serif;
+
+  color: var(--text-secondary);
+
+  font-family: var(--font-khmer);
+
+  line-height: 1.5;
 }
 
-/* ICON */
+/* ================= ICON ================= */
 .card-icon {
   width: 48px;
   height: 48px;
 
-  border-radius: 10px;
+  border-radius: 12px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  background-color: #9aadc0;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-input);
+
+  border: 1px solid var(--border-color);
+
+  color: var(--color-primary);
 
   flex-shrink: 0;
+
+  transition: var(--transition);
 }
 
-/* ICON SIZE */
+/* ================= ICON SVG ================= */
 .card-icon svg {
   width: 18px;
   height: 18px;
 }
 
-/* VALUE */
+/* ================= VALUE ================= */
 .card-subtitle {
   font-size: 28px;
   font-weight: 700;
-  color: #111827;
+
+  color: var(--text-primary);
+
   line-height: 1.1;
+
+  word-break: break-word;
 }
 
-/* TEXT (optional trend or subtitle) */
+/* ================= TEXT ================= */
 .card-text {
   font-size: 13px;
-  color: #6b7280;
+
+  color: var(--text-secondary);
+
   display: flex;
   align-items: center;
+
   gap: 4px;
+}
+
+/* ================= HOVER ================= */
+.card:hover {
+  transform: translateY(-2px);
+
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* ================= TABLET ================= */
+@media (max-width: 768px) {
+  .card-body {
+    padding: 18px;
+  }
+
+  .card-title {
+    font-size: 15px;
+  }
+
+  .card-subtitle {
+    font-size: 24px;
+  }
+
+  .card-icon {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* ================= MOBILE ================= */
+@media (max-width: 480px) {
+  .card {
+    border-radius: 12px;
+  }
+
+  .card-body {
+    padding: 16px;
+  }
+
+  .card-header-row {
+    gap: 10px;
+  }
+
+  .card-title {
+    font-size: 14px;
+  }
+
+  .card-subtitle {
+    font-size: 22px;
+  }
+
+  .card-icon {
+    width: 40px;
+    height: 40px;
+
+    border-radius: 10px;
+  }
+
+  .card-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .card-text {
+    font-size: 12px;
+  }
 }
 </style>
