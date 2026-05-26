@@ -177,7 +177,7 @@ const today = computed(() =>
 }
 
 .skeleton-chart {
-  height: 320px;
+  height: 350px;
 }
 
 .skeleton-table {
@@ -321,20 +321,41 @@ const today = computed(() =>
 }
 
 /* CHARTS */
+/* CHARTS */
 .charts-grid {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   gap: 20px;
-
   margin-top: 24px;
+  align-items: stretch;
 }
 
 .chart-card {
   background: var(--bg-card);
   padding: 20px;
   border-radius: 20px;
-
+  width: 100%;
+  min-height: 350px;
   box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-card :deep(canvas) {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.chart-card :deep(.apexcharts-canvas),
+.chart-card :deep(.recharts-responsive-container) {
+  width: 100% !important;
+  height: 100% !important;
+  flex: 1;
+}
+
+.chart-header {
+  margin-bottom: 14px;
 }
 
 .chart-header h3 {
@@ -345,7 +366,6 @@ const today = computed(() =>
   font-size: 12px;
   color: var(--text-secondary);
 }
-
 /* TABLE */
 .table-wrapper {
   margin-top: 24px;
