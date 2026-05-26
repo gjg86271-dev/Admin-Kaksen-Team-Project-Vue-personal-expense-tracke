@@ -1,109 +1,110 @@
 <template>
   <div class="dashboard">
 
-    <!-- HEADER -->
-    <div class="header-card mb-4">
+    <!-- PAGE LOADING SKELETON -->
+    <template v-if="isLoading">
+      <div class="skeleton skeleton-header mb-4"></div>
+
+      <div class="top-cards">
+        <div v-for="n in 2" :key="'card-' + n" class="skeleton skeleton-card"></div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="skeleton skeleton-chart"></div>
+        <div class="skeleton skeleton-chart"></div>
+      </div>
+
+      <div class="skeleton skeleton-table mt-4"></div>
+    </template>
+
+    <!-- REAL CONTENT -->
+    <template v-else>
+
+      <!-- HEADER -->
+      <div class="header-card mb-4">
         <div>
           <h1>ផ្ទាំងគ្រប់គ្រង</h1>
-          <p>សង្ខេបទិន្នន័យ និងសកម្មភាពប្រព័ន្ធ</p>
+          <p class="header-sub">សង្ខេបទិន្នន័យ និងសកម្មភាពប្រព័ន្ធ</p>
         </div>
+
         <div class="add-btn d-flex justify-content-center align-items-center">
-        <i class="bi bi-calendar3 me-2"></i>
-        <span>{{ today }}</span>
-      </div>
-      </div>
-
-    
-
-    <!-- HERO -->
-    <div class="hero-banner">
-      <div class="hero-content">
-        <div class="hero-text">
-
-          <h1>សូមស្វាគមន៍ការត្រឡប់មកវិញ </h1>
-
-          <p>
-            តាមដានចំណូល ចំណាយ និងសកម្មភាពប្រព័ន្ធ
-            របស់អ្នកបានយ៉ាងងាយស្រួល និងទាន់សម័យ
-          </p>
-        </div>
-
-        <div class="hero-image">
-          <img src="/src/assets/img/image.png" />
-        </div>
-      </div>
-    </div>
-
-    <!-- CARDS -->
-    <div class="top-cards">
-
-      <div class="summary-card users-card">
-        <div class="card-top">
-          <div>
-            <p class="card-label">អ្នកប្រើប្រាស់សរុប</p>
-            <h2 class="card-value">{{ dashboard.totalUsers }}</h2>
-          </div>
-
-          <div class="card-icon users-icon">
-            <i class="bi bi-people-fill"></i>
-          </div>
+          <i class="bi bi-calendar3 me-2"></i>
+          <span>{{ today }}</span>
         </div>
       </div>
 
-      <div class="summary-card category-card">
-        <div class="card-top">
-          <div>
-            <p class="card-label">ប្រភេទសរុប</p>
-            <h2 class="card-value">
-              {{ totalAllCategories.totalCategories }}
-            </h2>
-          </div>
+      <!-- CARDS -->
+      <div class="top-cards">
 
-          <div class="card-icon category-icon">
-            <i class="bi bi-grid-fill"></i>
-          </div>
-        </div>
-      </div>
+        <div class="summary-card users-card">
+          <div class="card-top">
+            <div>
+              <p class="card-label">អ្នកប្រើប្រាស់សរុប</p>
+              <h2 class="card-value">{{ dashboard.totalUsers }}</h2>
+            </div>
 
-    </div>
-
-    <!-- CHARTS -->
-    <div class="charts-grid">
-
-      <div class="chart-card">
-        <div class="chart-header">
-          <div>
-            <h3>ចំណូល និង ចំណាយ</h3>
-            <p>តាមប្រភេទប្រតិបត្តិការ</p>
+            <div class="card-icon users-icon">
+              <i class="bi bi-people-fill"></i>
+            </div>
           </div>
         </div>
 
-        <TrendChart />
-      </div>
+        <div class="summary-card category-card">
+          <div class="card-top">
+            <div>
+              <p class="card-label">ប្រភេទសរុប</p>
+              <h2 class="card-value">
+                {{ totalAllCategories.totalCategories }}
+              </h2>
+            </div>
 
-      <div class="chart-card">
-        <div class="chart-header">
-          <div>
-            <h3>សកម្មភាពអ្នកប្រើប្រាស់</h3>
-            <p>ស្ថិតិប្រចាំសប្តាហ៍</p>
+            <div class="card-icon category-icon">
+              <i class="bi bi-grid-fill"></i>
+            </div>
           </div>
         </div>
 
-        <SpendingChart />
       </div>
 
-    </div>
+      <!-- CHARTS -->
+      <div class="charts-grid">
 
-    <!-- TABLE -->
-    <div class="table-wrapper">
-      <ListUser />
-    </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <h3>ចំណូល និង ចំណាយ</h3>
+              <p>តាមប្រភេទប្រតិបត្តិការ</p>
+            </div>
+          </div>
+
+          <TrendChart />
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <h3>សកម្មភាពអ្នកប្រើប្រាស់</h3>
+              <p>ស្ថិតិប្រចាំសប្តាហ៍</p>
+            </div>
+          </div>
+
+          <SpendingChart />
+        </div>
+
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-wrapper">
+        <ListUser />
+      </div>
+
+    </template>
 
   </div>
 </template>
 
 <script setup>
-import { onMounted, computed } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { useCategoryStore } from "@/stores/categoryStore";
 
@@ -114,9 +115,17 @@ import ListUser from "@/components/ui/base/ListUser.vue";
 const dashboard = useDashboardStore();
 const totalAllCategories = useCategoryStore();
 
+const isLoading = ref(true);
+
 onMounted(async () => {
-  await dashboard.fetchDashboard();
-  await totalAllCategories.fetchTotalCategories();
+  try {
+    await Promise.all([
+      dashboard.fetchDashboard(),
+      totalAllCategories.fetchTotalCategories()
+    ]);
+  } finally {
+    isLoading.value = false;
+  }
 });
 
 const today = computed(() =>
@@ -131,10 +140,50 @@ const today = computed(() =>
 <style scoped>
 .dashboard {
   min-height: 100vh;
-  /* padding: 24px; */
   font-family: "Kantumruy Pro", sans-serif;
   background-color: transparent;
 }
+
+/* SKELETON */
+.skeleton {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    var(--bg-input) 25%,
+    var(--border-color) 50%,
+    var(--bg-input) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+  border-radius: var(--radius);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-header {
+  height: 80px;
+}
+
+.skeleton-card {
+  height: 110px;
+}
+
+.skeleton-chart {
+  height: 320px;
+}
+
+.skeleton-table {
+  height: 320px;
+}
+
 /* HEADER */
 
 .dashboard-title {
@@ -156,52 +205,28 @@ const today = computed(() =>
   padding: 10px 14px;
   border-radius: 999px;
 
-  /* background: rgba(255,255,255,0.15); */
   background-color: #2563eb;
 }
 
-/* HERO */
-.hero-banner {
-  margin-top: 20px;
-  padding: 28px;
-
-  border-radius: 24px;
-
-  /* background: linear-gradient(135deg, #1e3a8a, #2563eb); */
-  background-color: var(--bg-sidebar) ;
-  color: var(--text-white);
-}
-
-.hero-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-}
-
-.hero-text h1 {
-  font-size: 32px;
-  margin: 12px 0;
-}
-
-.hero-text p {
-  opacity: 0.8;
-  line-height: 1.6;
-  max-width: 500px;
-
-}
-
-.hero-image img {
-  width: 260px;
-  animation: float 3s ease-in-out infinite;
+.header-sub {
+  color: var(--text-white) !important;
 }
 
 /* FLOAT */
 @keyframes float {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0); }
+  0% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
 }
+
 .header-card {
   background: var(--bg-sidebar);
   border: 1px solid var(--border-color);
@@ -213,8 +238,18 @@ const today = computed(() =>
   box-shadow: var(--shadow);
 }
 
-.header-card h1 { font-size: 20px; font-weight: 700; margin: 0 0 2px; color: var(--text-white); }
-.header-card p  { font-size: 12px; margin: 0; color: var(--text-secondary) ; }
+.header-card h1 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 2px;
+  color: var(--text-white);
+}
+
+.header-card p {
+  font-size: 12px;
+  margin: 0;
+  color: var(--text-secondary);
+}
 
 .add-btn {
   height: 46px;
@@ -227,7 +262,6 @@ const today = computed(() =>
   border: 1.5px solid rgba(255,255,255,0.4);
   border-radius: 12px;
 }
-
 
 /* CARDS */
 .top-cards {
@@ -258,7 +292,7 @@ const today = computed(() =>
 
 .card-label {
   font-size: 13px;
-  color:var(--text-secondary);
+  color: var(--text-secondary);
 }
 
 .card-value {

@@ -16,18 +16,16 @@ import LandingFtView from '@/views/landingAllpage/LandingFtView.vue'
 import LandingAboutView from '@/views/landingAllpage/LandingAboutView.vue'
 import LandingHomeView from '@/views/landingAllpage/LandingHomeView.vue'
 import DetailUser from '@/views/User/DetailUser.vue'
+import NotFoundView from '@/views/NotFoundView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
 
   routes: [
-    // ✅ Root "/" redirect
     {
       path: '/',
       redirect: '/landing/homelanding',
     },
-
-    // Landing — guestOnly
     {
       path: '/landing',
       component: LandingView,
@@ -75,7 +73,7 @@ const router = createRouter({
       meta: { title: 'Reset Password', guestOnly: true },
     },
 
-    // Dashboard — requiresAuth + Admin only
+    // Dashboard — requiresAuth
     {
       path: '/dashboard',
       component: LayoutsDashboard,
@@ -106,18 +104,21 @@ const router = createRouter({
           component: UserView,
           meta: { title: 'User', requiresAuth: true },
         },
-       {
-          path: '/detail-user/:id',
+        {
+          path: 'detail-user/:id',
           name: 'detailuser',
-          component: DetailUser
-        }
+          component: DetailUser,
+          meta: { title: 'Detail User', requiresAuth: true },
+        },
       ],
     },
 
-    // 404
+    // 404 — must be last
     {
       path: '/:pathMatch(.*)*',
-      redirect: '/landing/homelanding',
+      name: 'not-found',
+      component: NotFoundView,
+      meta: { title: '404 Not Found' },
     },
   ],
 })
@@ -125,20 +126,22 @@ const router = createRouter({
 router.beforeEach((to) => {
   document.title = to.meta.title || 'Expense Tracker'
 
+  // ✅ Skip guard for 404 — let NotFoundView render freely
+  if (to.name === 'not-found') return
+
   const isAuthenticated =
     !!localStorage.getItem('token') || !!sessionStorage.getItem('token')
 
-  // ✅ ទាញ role ពី storage
   const role =
     localStorage.getItem('role') || sessionStorage.getItem('role')
   const isAdmin = role === 'ADMIN'
 
-  // មិនទាន់ login + ទៅ requiresAuth → landing
+  // Not logged in + requiresAuth → go to landing
   if (to.meta.requiresAuth && !isAuthenticated) {
     return { name: 'landing' }
   }
 
-  // ✅ login ហើយ ប៉ុន្តែ មិនមែន ADMIN → kick ចេញ clear storage
+  // Logged in but not ADMIN + requiresAuth → clear + go to login
   if (to.meta.requiresAuth && isAuthenticated && !isAdmin) {
     localStorage.removeItem('token')
     localStorage.removeItem('role')
@@ -147,7 +150,7 @@ router.beforeEach((to) => {
     return { name: 'login' }
   }
 
-  // login + ADMIN + ទៅ guestOnly → dashboard
+  // Logged in as ADMIN + guestOnly → go to dashboard
   if (to.meta.guestOnly && isAuthenticated && isAdmin) {
     return { name: 'dashboard' }
   }

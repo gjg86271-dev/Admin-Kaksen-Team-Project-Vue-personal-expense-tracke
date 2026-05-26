@@ -4,66 +4,53 @@ import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 import AuthTimelineSidebar from '@/components/auth/AuthTimelineSidebar.vue'
 import { useAuthStore } from '@/stores/authStore'
+import { useValidator } from '@/composables/useValidator'
 
-const router = useRouter()
+const router    = useRouter()
 const authStore = useAuthStore()
 
+const { errors, clearFieldError, validateForgetPassword } = useValidator(['email'])
+
 const sidebarSteps = [
-  { id: 1, label: 'បំពេញអុីមែល', status: 'active' },
-  { id: 2, label: 'ទទួលការផ្ញើសារ​ ឬToken', status: 'pending' },
-  { id: 3, label: 'បំពេញពាក្យសម្ងាត់ថ្មី', status: 'pending' },
+  { id: 1, label: 'បំពេញអ៊ីមែល',            status: 'active'  },
+  { id: 2, label: 'ទទួលការផ្ញើសារ ឬ Token', status: 'pending' },
+  { id: 3, label: 'បំពេញពាក្យសម្ងាត់ថ្មី',   status: 'pending' },
 ]
 
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-const form = reactive({
-  email: '',
-})
-
-const errors = reactive({
-  email: '',
-})
-
-const loading = ref(false)
+const form     = reactive({ email: '' })
+const loading  = ref(false)
 const apiError = ref('')
-
-const validateEmail = () => {
-  errors.email = ''
-
-  if (!form.email.trim()) {
-    errors.email = 'សូមបញ្ចូលអ៊ីមែលរបស់អ្នក។'
-  } else if (!emailPattern.test(form.email.trim())) {
-    errors.email = 'សូមបញ្ចូលអ៊ីមែលឱ្យបានត្រឹមត្រូវ។'
-  }
-
-  return !errors.email
-}
 
 const handleForgetPassword = async () => {
   apiError.value = ''
-  if (!validateEmail()) return
+  if (!validateForgetPassword(form)) return
 
   loading.value = true
-
   try {
-    await authStore.forgotPassword({
-      email: form.email.trim(),
-    })
+    await authStore.forgotPassword({ email: form.email.trim() })
 
     await Swal.fire({
       icon: 'success',
       title: 'ផ្ញើបានជោគជ័យ',
-      text: 'សូមបន្តកំណត់ពាក្យសម្ងាត់ថ្មី',
-      timer: 1500,
+      html: `សូមពិនិត្យអ៊ីមែល <strong>${form.email.trim()}</strong><br>ដើម្បីទទួលបាន Token ឬ OTP`,
+      timer: 2500,
+      timerProgressBar: true,
       showConfirmButton: false,
     })
 
+    router.push({ name: 'verify-otp' })
+
   } catch (error) {
+    const data = error?.response?.data
     apiError.value =
+      (Array.isArray(data?.details) && data.details.length > 0
+        ? data.details[0]?.message
+        : null) ||
+      data?.message ||
+      data?.error ||
       authStore.errorMsg ||
-      error?.response?.data?.message ||
       error?.message ||
-      'មិនអាចផ្ញើ Token បានទេ។ សូមព្យាយាមម្តងទៀត។'
+      'មិនអាចផ្ញើបានទេ។ សូមព្យាយាមម្តងទៀត។'
   } finally {
     loading.value = false
   }
@@ -81,15 +68,21 @@ const handleForgetPassword = async () => {
         </div>
 
         <h1 class="auth-title">ភ្លេចពាក្យសម្ងាត់?</h1>
-        <p class="auth-subtitle fw-semibold">
+        <p class="auth-subtitle">
           បញ្ចូលអ៊ីមែលរបស់អ្នក ដើម្បីទទួលសារសម្រាប់កំណត់ពាក្យសម្ងាត់ថ្មី
         </p>
 
         <form class="auth-form" @submit.prevent="handleForgetPassword" novalidate>
-          <div v-if="apiError" class="api-error-alert" role="alert">
-            {{ apiError }}
-          </div>
 
+          <!-- API error -->
+          <Transition name="fade-down">
+            <div v-if="apiError" class="api-error-alert" role="alert">
+              <i class="bi bi-exclamation-circle-fill"></i>
+              {{ apiError }}
+            </div>
+          </Transition>
+
+          <!-- Email field -->
           <div class="form-group">
             <label class="form-label-custom" for="email">អ៊ីមែល</label>
             <div class="input-group" :class="{ 'is-invalid': errors.email }">
@@ -104,22 +97,31 @@ const handleForgetPassword = async () => {
                 autocomplete="email"
                 placeholder="example@gmail.com"
                 :disabled="loading"
-                @input="errors.email = ''"
+                @input="clearFieldError('email'); apiError = ''"
               />
             </div>
-            <small v-if="errors.email" class="error-text">{{ errors.email }}</small>
+            <Transition name="fade-down">
+              <small v-if="errors.email" class="error-text">
+                <i class="bi bi-exclamation-circle"></i> {{ errors.email }}
+              </small>
+            </Transition>
           </div>
 
+          <!-- Submit -->
           <button type="submit" class="btn-primary-custom" :disabled="loading">
-            <span v-if="loading" class="spinner-border spinner-border-sm" role="status"></span>
-            <span v-else>ផ្ញើសារចូលអុីមែល</span>
+            <span v-if="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <template v-else>
+              <i class="bi bi-send"></i>
+              ផ្ញើសារចូលអ៊ីមែល
+            </template>
           </button>
+
         </form>
 
         <p class="back-text">
           <RouterLink :to="{ name: 'login' }" class="back-link">
             <i class="bi bi-arrow-left" aria-hidden="true"></i>
-            ត្រឡប់ទៅបង្កើតគណនី
+            ត្រឡប់ទៅចូលគណនី
           </RouterLink>
         </p>
       </div>
@@ -160,7 +162,6 @@ const handleForgetPassword = async () => {
   justify-content: center;
 }
 
-/* Icon */
 .icon-circle {
   width: 52px;
   height: 52px;
@@ -175,7 +176,6 @@ const handleForgetPassword = async () => {
   font-size: 22px;
 }
 
-/* Title & subtitle */
 .auth-title {
   margin: 0;
   color: #151a2d;
@@ -189,11 +189,11 @@ const handleForgetPassword = async () => {
   margin: 10px 0 26px;
   color: #8b9bb0;
   font-size: 15px;
+  font-weight: 600;
   line-height: 1.6;
   text-align: center;
 }
 
-/* Form */
 .auth-form {
   display: grid;
   gap: 16px;
@@ -201,6 +201,9 @@ const handleForgetPassword = async () => {
 }
 
 .api-error-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   padding: 10px 14px;
   border: 1px solid #fecdd3;
   border-radius: 10px;
@@ -209,8 +212,8 @@ const handleForgetPassword = async () => {
   font-size: 14px;
   line-height: 1.5;
 }
+.api-error-alert i { margin-top: 2px; flex-shrink: 0; }
 
-/* Label */
 .form-label-custom {
   display: block;
   margin: 0 0 8px 4px;
@@ -219,7 +222,6 @@ const handleForgetPassword = async () => {
   font-weight: 700;
 }
 
-/* Input wrapper */
 .input-group {
   display: flex;
   align-items: center;
@@ -231,19 +233,17 @@ const handleForgetPassword = async () => {
   gap: 10px;
   transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
 }
-
 .input-group:focus-within {
   border-color: #2d57b7;
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(45, 87, 183, 0.12);
 }
-
 .input-group.is-invalid {
   border-color: #ef4444;
   background: #fff7f7;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
-/* Icon inside input */
 .input-icon-left {
   flex-shrink: 0;
   color: #94a3b8;
@@ -251,7 +251,6 @@ const handleForgetPassword = async () => {
   line-height: 1;
 }
 
-/* Input field */
 .form-control-glass {
   flex: 1;
   min-width: 0;
@@ -265,32 +264,24 @@ const handleForgetPassword = async () => {
   font-family: inherit;
   font-size: 15px;
 }
+.form-control-glass::placeholder { color: #b7c3d3; font-size: 14px; }
+.form-control-glass:disabled     { cursor: not-allowed; opacity: 0.6; }
 
-.form-control-glass::placeholder {
-  color: #b7c3d3;
-  font-size: 14px;
-}
-
-.form-control-glass:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-/* Error */
 .error-text {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   margin: 6px 0 0 4px;
   color: #ef4444;
   font-size: 12px;
   line-height: 1.4;
 }
 
-/* Submit button */
 .btn-primary-custom {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
   height: 52px;
   border: none;
@@ -305,22 +296,18 @@ const handleForgetPassword = async () => {
   margin-top: 8px;
   transition: opacity 0.18s, transform 0.15s, box-shadow 0.18s;
 }
-
 .btn-primary-custom:hover:not(:disabled) {
   opacity: 0.93;
   transform: translateY(-1px);
   box-shadow: 0 7px 22px rgba(26, 79, 170, 0.36);
 }
-
 .btn-primary-custom:active:not(:disabled) { transform: translateY(0); }
 .btn-primary-custom:disabled { cursor: wait; opacity: 0.62; }
 
-/* Back link */
 .back-text {
   margin: 20px 0 0;
   text-align: center;
 }
-
 .back-link {
   display: inline-flex;
   align-items: center;
@@ -331,38 +318,21 @@ const handleForgetPassword = async () => {
   text-decoration: none;
   transition: color 0.18s;
 }
+.back-link:hover { color: #2d57b7; }
 
-.back-link:hover {
-  color: #2d57b7;
-}
+.fade-down-enter-active,
+.fade-down-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
+.fade-down-enter-from,
+.fade-down-leave-to     { opacity: 0; transform: translateY(-6px); }
 
-/* Responsive */
 @media (max-width: 900px) {
-  .auth-wrapper {
-    flex-direction: column;
-    border-radius: 20px;
-  }
-
-  .auth-card {
-    padding: 32px 28px;
-  }
+  .auth-wrapper { flex-direction: column; border-radius: 20px; }
+  .auth-card    { padding: 32px 28px; }
 }
-
 @media (max-width: 480px) {
-  .auth-centered {
-    padding: 24px 14px;
-  }
-
-  .auth-card {
-    padding: 28px 20px;
-  }
-
-  .auth-title {
-    font-size: 22px;
-  }
-
-  .auth-subtitle {
-    font-size: 14px;
-  }
+  .auth-centered { padding: 24px 14px; }
+  .auth-card     { padding: 28px 20px; }
+  .auth-title    { font-size: 22px; }
+  .auth-subtitle { font-size: 14px; }
 }
 </style>

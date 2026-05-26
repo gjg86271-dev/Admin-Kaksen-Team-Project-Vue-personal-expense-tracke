@@ -74,21 +74,39 @@ async function fetchTotalCategories() {
     }
   }
 
-  async function createCategory({ name, type }) {
-    loading.value = true
-    error.value = null
-    try {
-      const res = await api.post('/categories', { name, type })
-      categories.value.push(res.data?.data)
-      return { success: true }
-    } catch (err) {
-      console.error('Failed to create category:', err)
-      error.value = err.message || 'Failed to create category'
-      return { success: false, message: error.value }
-    } finally {
-      loading.value = false
+async function createCategory({ name, type, isSystem }) {
+  loading.value = true
+  error.value = null
+
+  try {
+
+    console.log('SEND =>', { name, type, isSystem })
+
+    const res = await api.post('/categories', {
+      name,
+      type,
+      isSystem
+    })
+
+    categories.value.push(res.data?.data)
+
+    return { success: true }
+
+  } catch (err) {
+
+    console.error('Failed to create category:', err)
+
+    error.value = err.message || 'Failed to create category'
+
+    return {
+      success: false,
+      message: error.value
     }
+
+  } finally {
+    loading.value = false
   }
+}
 
   async function updateCategory(id, { name, type }) {
     loading.value = true

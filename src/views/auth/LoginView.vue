@@ -19,7 +19,6 @@ const form = reactive({
 
 const isLoading = ref(false)
 const showPassword = ref(false)
-const formError = ref('')
 
 const steps = [
   { id: 1, label: 'បង្កើតគណនី',        status: 'completed' },
@@ -28,8 +27,6 @@ const steps = [
 ]
 
 const submitLogin = async () => {
-  formError.value = ''
-
   if (!validateLogin(form)) return
 
   isLoading.value = true
@@ -47,13 +44,12 @@ const submitLogin = async () => {
       draggable: true,
     })
 
-    router.push({ name: 'dashboard' }) // ✅ fixed: was 'home'
+    router.push({ name: 'dashboard' })
   } catch (error) {
     const message = authStore.errorMsg || 'Login failed. Please check your email and password.'
-
     await Swal.fire({
       icon: 'error',
-      title: 'សូមពិនិត្យមើលលេខកូដអ៊ីមែលរបស់អ្នកនិងពាក្យសម្ងាត់របស់អ្នក។',
+      title: 'សូមពិនិត្យមើលអ៊ីមែលនិងពាក្យសម្ងាត់របស់អ្នក។',
       text: message,
     })
   } finally {
@@ -76,7 +72,8 @@ const submitLogin = async () => {
       type="button"
       aria-label="ទំព័រដើម"
       title="ទំព័រដើម"
-      @click="router.push({ name: 'landing' })"> <!-- ✅ fixed: was 'landing-page' -->
+      @click="router.push({ name: 'landing' })"
+    >
       <i
         class="back-home-icon bi bi-house-door-fill d-inline-flex align-items-center justify-content-center rounded-circle text-white bg-primary flex-shrink-0"
         aria-hidden="true"
@@ -89,16 +86,14 @@ const submitLogin = async () => {
         <AuthTimelineSidebar :steps="steps" />
 
         <div class="login-card">
-          <h2 style="color:#042C83"> ស្វាគមន៍ <span style="color:#22C55E">ការត្រឡប់មកវិញ! </span></h2>
+          <h2 style="color:#042C83">
+            ស្វាគមន៍ <span style="color:#22C55E">ការត្រឡប់មកវិញ!</span>
+          </h2>
           <p class="login-subtitle">សូមបញ្ចូលព័ត៌មានរបស់អ្នក ដើម្បីចូលប្រើប្រាស់</p>
-
-          <div v-if="formError" class="form-alert" role="alert">
-            <i class="bi bi-exclamation-circle-fill"></i>
-            {{ formError }}
-          </div>
 
           <form @submit.prevent="submitLogin" novalidate>
 
+            <!-- Email -->
             <div class="field-group">
               <label class="field-label" for="email">អ៊ីមែល</label>
               <div class="input-shell" :class="{ 'is-invalid': errors.email }">
@@ -109,15 +104,16 @@ const submitLogin = async () => {
                   type="email"
                   autocomplete="email"
                   placeholder="Example@gmail.com"
-                  required
                   @input="clearFieldError('email')"
-                  @change="clearFieldError('email')"
-                  @paste="clearFieldError('email')"
                 />
               </div>
-              <p v-if="errors.email" class="field-error">{{ errors.email }}</p>
+              <p v-if="errors.email" class="field-error">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                {{ errors.email }}
+              </p>
             </div>
 
+            <!-- Password -->
             <div class="field-group">
               <label class="field-label" for="password">ពាក្យសម្ងាត់</label>
               <div class="input-shell" :class="{ 'is-invalid': errors.password }">
@@ -128,7 +124,6 @@ const submitLogin = async () => {
                   :type="showPassword ? 'text' : 'password'"
                   autocomplete="current-password"
                   placeholder="•••••••••"
-                  required
                   @input="clearFieldError('password')"
                 />
                 <button
@@ -140,13 +135,17 @@ const submitLogin = async () => {
                   <i :class="showPassword ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'"></i>
                 </button>
               </div>
-              <p v-if="errors.password" class="field-error">{{ errors.password }}</p>
+              <p v-if="errors.password" class="field-error">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                {{ errors.password }}
+              </p>
             </div>
 
+            <!-- Options -->
             <div class="login-options">
               <label class="remember-row" for="remember-me">
                 <input id="remember-me" v-model="form.rememberMe" type="checkbox" />
-                <span style="font-weight: 500 !important">ចងចាំខ្ញុំ</span>
+                <span style="font-weight: 500">ចងចាំខ្ញុំ</span>
               </label>
               <RouterLink class="forgot-link" :to="{ name: 'forgot-password' }">
                 ភ្លេចពាក្យសម្ងាត់?
@@ -154,11 +153,11 @@ const submitLogin = async () => {
             </div>
 
             <button class="login-button" type="submit" :disabled="isLoading">
+              <span v-if="isLoading" class="spinner" aria-hidden="true"></span>
               <span class="button-text">{{ isLoading ? 'កំពុងចូល...' : 'ចូលប្រើ' }}</span>
             </button>
 
           </form>
-
         </div>
       </div>
     </section>
@@ -207,7 +206,6 @@ const submitLogin = async () => {
 }
 
 .login-wrapper {
-  position: relative;
   display: flex;
   align-items: stretch;
   width: min(100%, 820px);
@@ -223,44 +221,31 @@ const submitLogin = async () => {
   z-index: 3;
   width: 46px;
   height: 46px;
-  max-width: calc(100% - 2rem);
   white-space: nowrap;
   transition: width 0.25s ease, transform 0.18s ease, box-shadow 0.18s ease;
 }
-
 .back-home-icon {
-  width: 38px;
-  height: 38px;
+  width: 38px; height: 38px;
   background: linear-gradient(135deg, #2b65cc 0%, #18a34a 100%) !important;
   font-size: 16px;
   transition: transform 0.2s ease;
 }
-
 .back-home-button .button-label {
-  max-width: 0;
-  opacity: 0;
-  overflow: hidden;
+  max-width: 0; opacity: 0; overflow: hidden;
   transform: translateX(-6px);
   transition: max-width 0.25s ease, opacity 0.18s ease, transform 0.2s ease;
 }
-
 .back-home-button:hover,
 .back-home-button:focus-visible {
   width: 224px;
   transform: translateY(-2px);
   box-shadow: 0 1rem 2rem rgba(26,79,170,0.2) !important;
 }
-
 .back-home-button:hover .back-home-icon,
-.back-home-button:focus-visible .back-home-icon {
-  transform: rotate(-6deg) scale(1.03);
-}
-
+.back-home-button:focus-visible .back-home-icon { transform: rotate(-6deg) scale(1.03); }
 .back-home-button:hover .button-label,
 .back-home-button:focus-visible .button-label {
-  max-width: 165px;
-  opacity: 1;
-  transform: translateX(0);
+  max-width: 165px; opacity: 1; transform: translateX(0);
 }
 
 .login-card {
@@ -276,21 +261,6 @@ const submitLogin = async () => {
   font-size: 13px;
   line-height: 1.5;
 }
-
-.form-alert {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-  border-radius: 10px;
-  padding: 10px 14px;
-  color: #9f1239;
-  background: #fff1f2;
-  border: 1px solid #fecdd3;
-  font-size: 13px;
-  line-height: 1.4;
-}
-.form-alert .bi { flex-shrink: 0; font-size: 14px; }
 
 .field-group { margin-bottom: 16px; }
 
@@ -319,7 +289,7 @@ const submitLogin = async () => {
 }
 .input-shell.is-invalid {
   border-color: #ef4444;
-  background: #fee2e2;
+  background: #fff5f5;
 }
 .input-shell.is-invalid:focus-within {
   border-color: #ef4444;
@@ -327,11 +297,15 @@ const submitLogin = async () => {
 }
 
 .field-error {
-  margin: 7px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 6px 4px 0;
   color: #ef4444;
   font-size: 12px;
-  line-height: 1.35;
+  line-height: 1.4;
 }
+.field-error .bi { font-size: 11px; flex-shrink: 0; }
 
 .field-icon { color: #7a8fae; font-size: 15px; flex-shrink: 0; }
 
@@ -367,7 +341,7 @@ const submitLogin = async () => {
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  margin: -6px 0 18px;
+  margin: -4px 0 18px;
 }
 
 .remember-row {
@@ -378,7 +352,6 @@ const submitLogin = async () => {
   color: #60718f;
   font-size: 12px;
   font-weight: 500;
-  line-height: 1;
   cursor: pointer;
 }
 .remember-row input {
@@ -398,7 +371,10 @@ const submitLogin = async () => {
 .forgot-link:hover { opacity: 0.72; }
 
 .login-button {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
   height: 48px;
   border: none;
@@ -421,30 +397,21 @@ const submitLogin = async () => {
 .login-button:active:not(:disabled) { transform: translateY(0); }
 .login-button:disabled { cursor: wait; opacity: 0.62; }
 
-.register-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 22px;
-  padding-top: 18px;
-  border-top: 1px solid #edf2fb;
+/* Loading spinner */
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
 }
-.register-hint { color: #7a8fae; font-size: 13px; }
-.register-link {
-  color: #2b65cc;
-  font-size: 13px;
-  font-weight: 500;
-  text-decoration: none;
-  transition: opacity 0.15s;
-}
-.register-link:hover { opacity: 0.72; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 900px) {
   .login-page { align-items: flex-start; padding: 18px 12px; }
   .login-wrapper { flex-direction: column; width: min(100%, 760px); border-radius: 20px; }
 }
-
 @media (max-width: 480px) {
   .login-page { padding: 0; }
   .login-wrapper { min-height: 100vh; border-radius: 0; }

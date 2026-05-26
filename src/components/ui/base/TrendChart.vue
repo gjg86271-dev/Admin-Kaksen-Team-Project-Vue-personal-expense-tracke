@@ -1,5 +1,5 @@
 <template>
-  <div class="card border-0   ">
+  <div class="card border-0">
     <!-- HEADER -->
     <div class="card-header border-0">
       <h3 class="card-title">
@@ -51,7 +51,7 @@ Chart.register(
 )
 
 const chartRef = ref(null)
-const loading = ref(true)
+const loading  = ref(true)
 
 let chartInstance = null
 
@@ -59,43 +59,30 @@ async function fetchAndBuild() {
   try {
     loading.value = true
 
-    // 🔥 API
     const res = await api.get(
       '/users?_page=1&_per_page=10&search&sortBy=id&sortDir=asc'
     )
 
     const users = res.data.data.items || []
 
-    // 🔥 Group users by day
+    // Group users by day
     const grouped = {}
 
     users.forEach(user => {
       const rawDate = user.registeredAt
-
       if (!rawDate) return
 
       const date = new Date(rawDate)
-
-      // prevent invalid date
       if (isNaN(date.getTime())) return
 
       const key = date.toISOString().split('T')[0]
-
-      if (!grouped[key]) {
-        grouped[key] = 0
-      }
-
-      grouped[key]++
+      grouped[key] = (grouped[key] || 0) + 1
     })
 
-    // 🔥 Labels
     const labels = Object.keys(grouped).map(date =>
-      new Date(date).toLocaleDateString('km-KH', {
-        weekday: 'short'
-      })
+      new Date(date).toLocaleDateString('km-KH', { weekday: 'short' })
     )
 
-    // 🔥 Data
     const activeUsers = Object.values(grouped)
 
     loading.value = false
@@ -104,36 +91,26 @@ async function fetchAndBuild() {
 
     if (!chartRef.value) return
 
-    // destroy old chart
     if (chartInstance) {
       chartInstance.destroy()
     }
 
-    // 🔥 Create chart
     chartInstance = new Chart(chartRef.value, {
       type: 'line',
 
       data: {
         labels,
-
         datasets: [
           {
             label: 'អ្នកប្រើសកម្ម',
-
             data: activeUsers,
-
             borderColor: '#2563eb',
             backgroundColor: 'rgba(37, 99, 235, 0.12)',
-
             fill: true,
-
             tension: 0.4,
-
             borderWidth: 3,
-
             pointRadius: 5,
             pointHoverRadius: 7,
-
             pointBackgroundColor: '#2563eb',
             pointBorderColor: '#ffffff',
             pointBorderWidth: 2
@@ -153,50 +130,33 @@ async function fetchAndBuild() {
         plugins: {
           legend: {
             position: 'bottom',
-
             labels: {
               usePointStyle: true,
               pointStyle: 'circle',
-
               font: {
-                family:
-                  "'Kantumruy Pro', 'Khmer OS', sans-serif"
+                family: "'Kantumruy Pro', 'Khmer OS', sans-serif"
               }
             }
           },
 
           tooltip: {
             backgroundColor: '#111827',
-
             callbacks: {
-              label: ctx =>
-                ` ${ctx.dataset.label}: ${ctx.parsed.y}`
+              label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}`
             }
           }
         },
 
         scales: {
           x: {
-            grid: {
-              display: false
-            },
-
-            ticks: {
-              color: '#6b7280'
-            }
+            grid: { display: false },
+            ticks: { color: '#6b7280' }
           },
 
           y: {
             beginAtZero: true,
-
-            grid: {
-              color: '#f3f4f6'
-            },
-
-            ticks: {
-              color: '#6b7280',
-              precision: 0
-            }
+            grid: { color: '#f3f4f6' },
+            ticks: { color: '#6b7280', precision: 0 }
           }
         }
       }
@@ -206,7 +166,6 @@ async function fetchAndBuild() {
     loading.value = false
   }
 }
-
 
 onMounted(() => {
   fetchAndBuild()
@@ -224,16 +183,14 @@ onBeforeUnmount(() => {
   background: var(--bg-card);
   border-radius: 18px;
   padding: 1.25rem 1.5rem;
-  
-  
- 
   display: flex;
   flex-direction: column;
-
   box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
 }
 
-/* HEADER */
+/* ── HEADER ── */
 .card-header {
   padding: 0 0 1rem 0;
   flex-shrink: 0;
@@ -243,77 +200,69 @@ onBeforeUnmount(() => {
   font-size: 18px;
   font-weight: 700;
   margin: 0;
-
-  color:var(--text-primary);
-
-  font-family:
-    'Kantumruy Pro',
-    'Khmer OS',
-    sans-serif !important;
+  color: var(--text-primary);
+  font-family: 'Kantumruy Pro', 'Khmer OS', sans-serif !important;
 }
 
-/* BODY */
+/* ── BODY ── */
 .card-body {
   flex: 1;
   min-height: 0;
-
   display: flex;
   flex-direction: column;
-
-  
 }
 
-/* CHART */
+/* ── CHART ── */
 .chart-wrapper {
   position: relative;
-
   width: 100%;
-  height: 320px;
+  height: clamp(200px, 35vw, 320px);
 }
 
-/* LOADING */
+/* ── LOADING ── */
 .loading {
   flex: 1;
-
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-
   color: var(--text-secondary);
   font-size: 14px;
+  min-height: 200px;
 }
 
 .spinner {
   width: 20px;
   height: 20px;
-
   border: 2px solid var(--border-primary);
   border-top-color: #2563eb;
-
   border-radius: 999px;
-
   animation: spin 0.7s linear infinite;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
-/* MOBILE */
-@media (max-width: 640px) {
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
   .card {
-    padding: 1rem;
-  }
-
-  .chart-wrapper {
-    height: 260px;
+    padding: 1rem 1.25rem;
   }
 
   .card-title {
     font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 1rem;
+    border-radius: 14px;
+  }
+
+  .card-title {
+    font-size: 15px;
   }
 }
 </style>

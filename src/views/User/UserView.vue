@@ -3,6 +3,44 @@
   font-family: 'Kantumruy Pro', 'Khmer OS', sans-serif !important;
 }
 
+/* ── Skeleton ── */
+.skeleton {
+  display: block;
+  background: linear-gradient(90deg, var(--bg-input) 25%, var(--border-color) 50%, var(--bg-input) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+  border-radius: var(--radius);
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Page-level skeleton sizes */
+.skeleton-header { height: 80px; }
+.skeleton-filter { height: 60px; }
+.skeleton-table  { height: 320px; }
+
+/* Table row skeleton */
+.skeleton-row {
+  height: 20px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--bg-input) 25%, var(--border-color) 50%, var(--bg-input) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+}
+
+/* Mobile card skeleton */
+.mobile-card-skeleton {
+  height: 72px;
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  background: linear-gradient(90deg, var(--bg-input) 25%, var(--border-color) 50%, var(--bg-input) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+}
+
 /* HERO */
 .hero-banner {
   margin-top: 20px;
@@ -78,7 +116,9 @@
   flex-shrink: 0;
 }
 
-.header-texts { min-width: 0; }
+.header-texts {
+  min-width: 0;
+}
 
 .header-app-name {
   font-size: 11px;
@@ -109,7 +149,6 @@
 
 .header-badge {
   display: flex;
-  /* flex-direction: column; */
   align-items: center;
   justify-content: center;
   gap: 9px;
@@ -121,7 +160,10 @@
   min-width: 90px;
 }
 
-.header-badge i { font-size: 20px; color: rgba(255, 255, 255, 0.85); }
+.header-badge i {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.85);
+}
 
 .header-badge .badge-number {
   font-size: 28px;
@@ -216,7 +258,10 @@
   white-space: nowrap;
 }
 
-.filter-label i { color: var(--color-primary); font-size: 15px; }
+.filter-label i {
+  color: var(--color-primary);
+  font-size: 15px;
+}
 
 .search-box {
   display: flex;
@@ -238,7 +283,11 @@
   box-shadow: 0 0 0 3px rgba(26, 98, 212, 0.10);
 }
 
-.search-box i { color: var(--text-secondary); font-size: 13px; flex-shrink: 0; }
+.search-box i {
+  color: var(--text-secondary);
+  font-size: 13px;
+  flex-shrink: 0;
+}
 
 .search-box input {
   border: none;
@@ -250,7 +299,9 @@
   color: var(--text-primary);
 }
 
-.search-box input::placeholder { color: var(--border-color); }
+.search-box input::placeholder {
+  color: var(--border-color);
+}
 
 .clear-btn {
   border: none;
@@ -263,7 +314,10 @@
   flex-shrink: 0;
   transition: color 0.15s;
 }
-.clear-btn:hover { color: var(--text-primary); }
+
+.clear-btn:hover {
+  color: var(--text-primary);
+}
 
 .reset-btn {
   display: flex;
@@ -280,6 +334,7 @@
   transition: var(--transition);
   white-space: nowrap;
 }
+
 .reset-btn:hover {
   border-color: var(--color-danger);
   color: var(--color-danger);
@@ -295,27 +350,28 @@
   background: var(--bg-card);
 }
 
-.table { border-collapse: collapse; }
+.table {
+  border-collapse: collapse;
+}
 
-/* Override Bootstrap table colors with CSS variables */
-.table > :not(caption) > * > * {
+.table> :not(caption)>*>* {
   background-color: var(--bg-card);
   color: var(--text-primary);
   border-bottom-color: var(--border-color);
 }
 
-.table thead.table-secondary > tr > th {
+.table thead.table-secondary>tr>th {
   background-color: var(--bg-input);
   color: var(--text-secondary);
   border-bottom: 2px solid var(--border-color);
   font-weight: 600;
 }
 
-.table tbody tr:hover > * {
+.table tbody tr:hover>* {
   background-color: var(--bg-input);
 }
 
-/* Role badges using CSS variables */
+/* Role badges */
 .role-badge {
   display: inline-block;
   padding: 3px 12px;
@@ -336,169 +392,205 @@
   color: var(--color-danger);
   border: 1px solid rgba(220, 38, 38, 0.25);
 }
-
-/* ── SKELETON ─────────────────────────────────────── */
-.skeleton {
-  display: inline-block;
-  background: linear-gradient(90deg, var(--border-color) 25%, var(--bg-input) 50%, var(--border-color) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 6px;
-  vertical-align: middle;
-}
-
-@keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
 </style>
 
 <template>
-  <div>
-    <!-- HEADER BANNER -->
-    <div class="header-banner">
-      <div class="header-left">
-        <div class="header-texts">
-          <h1 class="header-title">អ្នកប្រើប្រាស់</h1>
-          <p class="header-sub">គ្រប់គ្រងអ្នកប្រើប្រាស់ទាំងអស់</p>
-        </div>
-      </div>
-      <div class="header-badge">
-        <i class="bi bi-people-fill"></i>
-        <span class="badge-number">
-          <span v-if="loading && totalUsers === 0">—</span>
-          <span v-else>{{ totalUsers }}</span>
-        </span>
-        <span class="badge-label">នាក់</span>
-      </div>
-    </div>
+  <div class="font">
 
+    <!-- PAGE LOADING SKELETON -->
+    <template v-if="isLoading">
+      <div class="skeleton skeleton-header mb-4"></div>
+      <div class="skeleton skeleton-filter mb-4"></div>
+      <div class="skeleton skeleton-table"></div>
+    </template>
 
-    <!-- FILTER BAR -->
-    <div class="filter-card mb-4">
-      <div class="filter-bar">
-        <div class="filter-label">
-          <i class="bi bi-funnel-fill"></i>
-          <span>តម្រង</span>
-        </div>
-        <div class="search-box" :class="{ focused: searchFocused }">
-          <i class="bi bi-search"></i>
-          <input
-            v-model="search"
-            @input="onSearchInput"
-            @focus="searchFocused = true"
-            @blur="searchFocused = false"
-            type="search"
-            placeholder="ស្វែងរក..."
-          />
-          <button v-if="search" class="clear-btn" @click="clearSearch">
-            <i class="bi bi-x"></i>
-          </button>
-        </div>
-        <button class="reset-btn" @click="resetFilters">
-          <i class="bi bi-arrow-counterclockwise"></i>
-          <span class="d-none d-sm-inline">លុបតម្រង</span>
-        </button>
-      </div>
-    </div>
+    <!-- REAL CONTENT -->
+    <template v-else>
 
-    <!-- DESKTOP TABLE -->
-    <div class="table-wrap d-none d-md-block">
-      <table class="table mb-0 font align-middle">
-        <thead class="table-secondary">
-          <tr class="text-center">
-            <th>រូបថត</th>
-            <th>ឈ្មោះពេញ</th>
-            <th>អ៊ីមែល</th>
-            <th>តួនាទី</th>
-            <th>កាលបរិច្ឆេទចុះឈ្មោះ</th>
-            <th>សកម្មភាព</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="loading">
-            <td colspan="6" class="text-center py-5 text-muted">
-              <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-              កំពុងទាញយកទិន្នន័យ...
-            </td>
-          </tr>
-          <template v-else-if="users.length > 0">
-            <tr v-for="user in users" :key="user.id" class="text-center">
-              <td>
-                <img :src="user.avatar" alt="Avatar" class="rounded-circle" width="40" height="40" style="object-fit:cover;" />
-              </td>
-              <td>{{ user.fullName }}</td>
-              <td>{{ user.email }}</td>
-              <td>
-                <span :class="user.role?.name === 'ADMIN' ? 'role-badge role-badge--admin' : 'role-badge role-badge--user'">
-                  {{ user.role?.name }}
-                </span>
-              </td>
-              <td>{{ formatDate(user.registeredAt) }}</td>
-              <td>
-                <RouterLink class="btn text-primary btn-sm" :to="{ name: 'detailuser', params: { id: user.id } }">
-                  <i class="bi bi-eye-fill"></i>
-                </RouterLink>
-                <button class="btn text-danger btn-sm" @click="openDeleteModal(user)">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </td>
-            </tr>
-          </template>
-          <tr v-else>
-            <td colspan="6" class="text-center py-5 text-muted">
-              <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-              គ្មានទិន្នន័យ
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- MOBILE CARDS -->
-    <div class="d-md-none mt-3">
-      <div v-if="loading" class="text-center py-5 text-muted">
-        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-        កំពុងទាញយកទិន្នន័យ...
-      </div>
-      <template v-else-if="users.length > 0">
-        <div
-          v-for="user in users" :key="user.id"
-          class="d-flex align-items-center justify-content-between p-3 mb-2 rounded-3 shadow-sm"
-          style="background:var(--bg-card);border:1px solid var(--border-color);"
-        >
-          <div class="d-flex align-items-center gap-3">
-            <img :src="user.avatar" class="rounded-circle" width="42" height="42" style="object-fit:cover;" />
-            <div>
-              <div class="fw-semibold" style="color:var(--text-primary);">{{ user.fullName }}</div>
-              <div style="font-size:12px;color:var(--text-secondary);">{{ user.email }}</div>
-              <div class="mt-1">
-                <span :class="user.role?.name === 'ADMIN' ? 'role-badge role-badge--admin' : 'role-badge role-badge--user'">
-                  {{ user.role?.name }}
-                </span>
-              </div>
-            </div>
+      <!-- HEADER BANNER -->
+      <div class="header-banner mb-4">
+        <div class="header-left">
+          <div class="header-texts">
+            <h1 class="header-title">អ្នកប្រើប្រាស់</h1>
+            <p class="header-sub">គ្រប់គ្រងអ្នកប្រើប្រាស់ទាំងអស់</p>
           </div>
-          <div class="d-flex gap-1">
-            <RouterLink class="btn text-primary btn-sm" :to="{ name: 'detailuser', params: { id: user.id } }">
-              <i class="bi bi-eye-fill"></i>
-            </RouterLink>
-            <button class="btn text-danger btn-sm" @click="openDeleteModal(user)">
-              <i class="bi bi-trash"></i>
+        </div>
+        <div class="header-badge">
+          <i class="bi bi-people-fill"></i>
+          <span class="badge-number">{{ totalUsers }}</span>
+          <span class="badge-label">នាក់</span>
+        </div>
+      </div>
+
+      <!-- FILTER BAR -->
+      <div class="filter-card mb-4">
+        <div class="filter-bar">
+          <div class="filter-label">
+            <i class="bi bi-funnel-fill"></i>
+            <span>តម្រង</span>
+          </div>
+          <div class="search-box" :class="{ focused: searchFocused }">
+            <i class="bi bi-search"></i>
+            <input
+              v-model="search"
+              @input="onSearchInput"
+              @focus="searchFocused = true"
+              @blur="searchFocused = false"
+              type="search"
+              placeholder="ស្វែងរក..."
+            />
+            <button v-if="search" class="clear-btn" @click="clearSearch">
+              <i class="bi bi-x"></i>
             </button>
           </div>
+          <button class="reset-btn" @click="resetFilters">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span class="d-none d-sm-inline">លុបតម្រង</span>
+          </button>
         </div>
-      </template>
-      <div v-else class="text-center py-5" style="color:var(--text-secondary);">
-        <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-        គ្មានទិន្នន័យ
       </div>
-    </div>
 
-    <!-- PAGINATION -->
-    <div v-if="totalPages > 1" class="d-flex justify-content-center mt-4">
-      <Pagination v-model:currentPage="currentPage" :total-pages="totalPages" :sibling-count="1" />
-    </div>
+      <!-- DESKTOP TABLE -->
+      <div class="table-wrap d-none d-md-block">
+        <table class="table mb-0 font align-middle">
+          <thead class="table-secondary">
+            <tr class="text-center">
+              <th>រូបថត</th>
+              <th>ឈ្មោះពេញ</th>
+              <th>អ៊ីមែល</th>
+              <th>តួនាទី</th>
+              <th>កាលបរិច្ឆេទចុះឈ្មោះ</th>
+              <th>សកម្មភាព</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Pagination loading skeleton rows -->
+            <template v-if="pageChanging">
+              <tr v-for="n in 5" :key="'sk-' + n">
+                <td colspan="6" class="py-2 px-3">
+                  <div class="skeleton-row"></div>
+                </td>
+              </tr>
+            </template>
+
+            <template v-else-if="users.length > 0">
+              <tr v-for="user in users.filter(u => u.role?.name !== 'ADMIN')" :key="user.id">
+                <td class="text-center">
+                  <img
+                    :src="user.avatar"
+                    alt="Avatar"
+                    class="rounded-circle"
+                    width="40"
+                    height="40"
+                    style="object-fit:cover;"
+                  />
+                </td>
+                <td>{{ user.fullName }}</td>
+                <td>{{ user.email }}</td>
+                <td class="text-center">
+                  <span
+                    :class="user.role?.name === 'ADMIN'
+                      ? 'role-badge role-badge--admin'
+                      : 'role-badge role-badge--user'"
+                  >
+                    {{ user.role?.name }}
+                  </span>
+                </td>
+                <td class="text-center">{{ formatDate(user.registeredAt) }}</td>
+                <td class="text-center">
+                  <RouterLink
+                    class="btn text-primary btn-sm"
+                    :to="{ name: 'detailuser', params: { id: user.id } }"
+                  >
+                    <i class="bi bi-eye-fill"></i>
+                  </RouterLink>
+                  <button
+                    class="btn text-danger btn-sm"
+                    @click="openDeleteModal(user)"
+                    :disabled="isAdmin"
+                  >
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </template>
+
+            <tr v-else>
+              <td colspan="6" class="text-center py-5 text-muted">
+                <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                គ្មានទិន្នន័យ
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- MOBILE CARDS -->
+      <div class="d-md-none mt-3">
+        <!-- Pagination loading skeleton -->
+        <template v-if="pageChanging">
+          <div v-for="n in 4" :key="'msk-' + n" class="mobile-card-skeleton"></div>
+        </template>
+
+        <template v-else-if="users.length > 0">
+          <div
+            v-for="user in users"
+            :key="user.id"
+            class="d-flex align-items-center justify-content-between p-3 mb-2 rounded-3 shadow-sm"
+            style="background:var(--bg-card);border:1px solid var(--border-color);"
+          >
+            <div class="d-flex align-items-center gap-3">
+              <img
+                :src="user.avatar"
+                class="rounded-circle"
+                width="42"
+                height="42"
+                style="object-fit:cover;"
+              />
+              <div>
+                <div class="fw-semibold" style="color:var(--text-primary);">{{ user.fullName }}</div>
+                <div style="font-size:12px;color:var(--text-secondary);">{{ user.email }}</div>
+                <div class="mt-1">
+                  <span
+                    :class="user.role?.name === 'ADMIN'
+                      ? 'role-badge role-badge--admin'
+                      : 'role-badge role-badge--user'"
+                  >
+                    {{ user.role?.name }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex gap-1">
+              <RouterLink
+                class="btn text-primary btn-sm"
+                :to="{ name: 'detailuser', params: { id: user.id } }"
+              >
+                <i class="bi bi-eye-fill"></i>
+              </RouterLink>
+              <button class="btn text-danger btn-sm" @click="openDeleteModal(user)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </div>
+        </template>
+
+        <div v-else class="text-center py-5" style="color:var(--text-secondary);">
+          <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+          គ្មានទិន្នន័យ
+        </div>
+      </div>
+
+      <!-- PAGINATION -->
+      <div v-if="totalPages > 1" class="d-flex justify-content-center mt-4">
+        <Pagination
+          v-model:currentPage="currentPage"
+          :total-pages="totalPages"
+          :sibling-count="1"
+        />
+      </div>
+
+    </template>
 
     <!-- DELETE MODAL -->
     <BaseModal v-if="showDeleteModal" title="លុបអ្នកប្រើប្រាស់" @close-modal="closeDeleteModal">
@@ -514,13 +606,16 @@
         </div>
       </template>
       <template #footer>
-        <button class="btn btn-secondary" @click="closeDeleteModal" :disabled="deleteLoading">បោះបង់</button>
+        <button class="btn btn-secondary" @click="closeDeleteModal" :disabled="deleteLoading">
+          បោះបង់
+        </button>
         <button class="btn btn-danger" @click="deleteUser" :disabled="deleteLoading">
           <span v-if="deleteLoading" class="spinner-border spinner-border-sm me-1"></span>
           លុប
         </button>
       </template>
     </BaseModal>
+
   </div>
 </template>
 
@@ -530,45 +625,47 @@ import api from '@/api/api'
 import BaseModal from '@/components/ui/base/BaseModal.vue'
 import Pagination from '@/components/ui/base/PaginAtion.vue'
 
-const users           = ref([])
-const loading         = ref(true)
-const search          = ref('')
-const searchFocused   = ref(false)
+const users        = ref([])
+const isLoading    = ref(true)   // page-level skeleton (first mount only)
+const pageChanging = ref(false)  // skeleton rows during pagination/search re-fetch
+const search       = ref('')
+const searchFocused = ref(false)
 const showDeleteModal = ref(false)
-const selectedUser    = ref(null)
-const deleteLoading   = ref(false)
+const selectedUser = ref(null)
+const deleteLoading = ref(false)
 
 const totalUsers  = ref(0)
 const perPage     = 10
 const currentPage = ref(1)
 const totalPages  = ref(1)
+const isAdmin     = ref(false)
 
 let searchTimer = null
+let skipWatch   = false
 
-// Fix 3: flag to suppress watch re-fetch when page is clamped internally
-let skipWatch = false
-
-const fetchUsers = async () => {
+// ── FETCH ──────────────────────────────────────────────────────────────────
+const fetchUsers = async ({ showPageChanging = false } = {}) => {
   try {
-    loading.value = true
+    if (showPageChanging) pageChanging.value = true
+
     const res = await api.get('users', {
       params: {
-        _page:     currentPage.value,
+        _page:    currentPage.value,
         _per_page: perPage,
-        search:    search.value,
-        sortBy:    'id',
-        sortDir:   'asc'
+        search:   search.value,
+        sortBy:   'id',
+        sortDir:  'asc'
       }
     })
 
     const data = res.data?.data
     const meta = data?.meta
 
-    users.value      = data?.items      ?? []
+    users.value      = data?.items ?? []
     totalUsers.value = meta?.totalItems ?? 0
     totalPages.value = meta?.totalPages ?? 1
 
-    // Clamp without triggering the watch
+    // Clamp page without triggering the watch
     if (currentPage.value > totalPages.value && totalPages.value > 0) {
       skipWatch = true
       currentPage.value = totalPages.value
@@ -576,23 +673,24 @@ const fetchUsers = async () => {
   } catch (err) {
     console.error('fetchUsers error:', err)
   } finally {
-    loading.value = false
+    pageChanging.value = false
   }
 }
 
-// Fix 4: watch drives pagination; skipWatch prevents double-fetch on internal clamp
+// ── WATCH — pagination ────────────────────────────────────────────────────
 watch(currentPage, () => {
   if (skipWatch) { skipWatch = false; return }
-  fetchUsers()
+  fetchUsers({ showPageChanging: true })
   window.scrollTo({ top: 0, behavior: 'smooth' })
 })
 
+// ── SEARCH ────────────────────────────────────────────────────────────────
 const onSearchInput = () => {
   clearTimeout(searchTimer)
   searchTimer = setTimeout(() => {
-    skipWatch = true          // resetting to page 1 shouldn't fire the watch
+    skipWatch = true
     currentPage.value = 1
-    fetchUsers()
+    fetchUsers({ showPageChanging: true })
   }, 400)
 }
 
@@ -600,21 +698,20 @@ const clearSearch = () => {
   search.value = ''
   skipWatch = true
   currentPage.value = 1
-  fetchUsers()
+  fetchUsers({ showPageChanging: true })
 }
 
 const resetFilters = () => {
   search.value = ''
   skipWatch = true
   currentPage.value = 1
-  fetchUsers()
+  fetchUsers({ showPageChanging: true })
 }
 
+// ── DELETE ────────────────────────────────────────────────────────────────
 const openDeleteModal  = (user) => { selectedUser.value = user; showDeleteModal.value = true }
-const closeDeleteModal = ()     => { showDeleteModal.value = false; selectedUser.value = null }
+const closeDeleteModal = () => { showDeleteModal.value = false; selectedUser.value = null }
 
-// Fix 5: deleteUser had a double-fetch (explicit fetchUsers + watch on currentPage--).
-// Now: if last item on page > 1 → decrement (watch handles fetch), otherwise fetch directly.
 const deleteUser = async () => {
   try {
     deleteLoading.value = true
@@ -622,9 +719,9 @@ const deleteUser = async () => {
     closeDeleteModal()
 
     if (users.value.length === 1 && currentPage.value > 1) {
-      currentPage.value--   // watch fires → fetchUsers()
+      currentPage.value-- // watch fires → fetchUsers
     } else {
-      await fetchUsers()    // same page, no page change, fetch manually
+      await fetchUsers({ showPageChanging: true })
     }
   } catch (err) {
     console.error('deleteUser error:', err)
@@ -633,7 +730,15 @@ const deleteUser = async () => {
   }
 }
 
+// ── HELPERS ───────────────────────────────────────────────────────────────
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-GB') : ''
 
-onMounted(fetchUsers)
+// ── LIFECYCLE ─────────────────────────────────────────────────────────────
+onMounted(async () => {
+  try {
+    await fetchUsers()
+  } finally {
+    isLoading.value = false
+  }
+})
 </script>

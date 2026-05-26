@@ -199,13 +199,13 @@ Chart.register(
 
 const categoryStore = useCategoryStore()
 
-const incomeRef = ref(null)
+const incomeRef  = ref(null)
 const expenseRef = ref(null)
 
-let incomeChart = null
+let incomeChart  = null
 let expenseChart = null
 
-// 🎨 Colors
+// Colors
 const incomeColors = [
   '#1D9E75',
   '#5DCAA5',
@@ -228,7 +228,6 @@ const expenseColors = [
   '#E24B4A'
 ]
 
-// 🔥 Map categories → chart data
 const incomeChartData = computed(() =>
   categoryStore.incomeCategories.map(c => ({
     label: c.name,
@@ -245,54 +244,34 @@ const expenseChartData = computed(() =>
   }))
 )
 
-// 🔥 Destroy safely
 function destroyCharts() {
-  if (incomeChart) {
-    incomeChart.destroy()
-    incomeChart = null
-  }
-
-  if (expenseChart) {
-    expenseChart.destroy()
-    expenseChart = null
-  }
+  if (incomeChart)  { incomeChart.destroy();  incomeChart  = null }
+  if (expenseChart) { expenseChart.destroy(); expenseChart = null }
 }
 
-// 🔥 Build chart
 function buildChart(canvas, data, colors) {
   if (!canvas || !data.length) return null
 
   return new Chart(canvas, {
     type: 'doughnut',
-
     data: {
       labels: data.map(i => i.label),
-
       datasets: [
         {
           data: data.map(() => 1),
-
           backgroundColor: colors.slice(0, data.length),
-
           borderWidth: 3,
           borderColor: '#ffffff',
-
           hoverOffset: 8,
         }
       ]
     },
-
     options: {
       responsive: true,
       maintainAspectRatio: false,
-
       cutout: '68%',
-
       plugins: {
-        legend: {
-          display: false
-        },
-
+        legend: { display: false },
         tooltip: {
           callbacks: {
             label: (ctx) => ` ${ctx.label}`
@@ -305,29 +284,14 @@ function buildChart(canvas, data, colors) {
 
 async function renderCharts() {
   await nextTick()
-
   destroyCharts()
 
-  if (
-    incomeRef.value &&
-    incomeChartData.value.length
-  ) {
-    incomeChart = buildChart(
-      incomeRef.value,
-      incomeChartData.value,
-      incomeColors
-    )
+  if (incomeRef.value && incomeChartData.value.length) {
+    incomeChart = buildChart(incomeRef.value, incomeChartData.value, incomeColors)
   }
 
-  if (
-    expenseRef.value &&
-    expenseChartData.value.length
-  ) {
-    expenseChart = buildChart(
-      expenseRef.value,
-      expenseChartData.value,
-      expenseColors
-    )
+  if (expenseRef.value && expenseChartData.value.length) {
+    expenseChart = buildChart(expenseRef.value, expenseChartData.value, expenseColors)
   }
 }
 
@@ -337,13 +301,8 @@ onMounted(async () => {
 })
 
 watch(
-  () => [
-    categoryStore.incomeCategories,
-    categoryStore.expenseCategories
-  ],
-
+  () => [categoryStore.incomeCategories, categoryStore.expenseCategories],
   () => renderCharts(),
-
   { deep: true }
 )
 
@@ -351,16 +310,15 @@ onBeforeUnmount(() => destroyCharts())
 </script>
 
 <style scoped>
-/* CARD */
+/* ── CARD ── */
 .spend-card {
   background: var(--bg-card);
   border-radius: 16px;
-
   overflow: hidden;
   width: 100%;
 }
 
-/* HEADER */
+/* ── HEADER ── */
 .spend-card__header {
   padding: 22px 24px 0;
 }
@@ -368,145 +326,103 @@ onBeforeUnmount(() => destroyCharts())
 .spend-card__title {
   font-size: 18px;
   font-weight: 600;
-
   color: var(--text-primary);
-
   margin: 0 0 20px;
 }
 
-/* BODY */
+/* ── BODY ── */
 .spend-card__body {
   padding: 0 24px 24px;
 }
 
-/* LOADING */
+/* ── LOADING ── */
 .spend-card__loading {
   display: flex;
   align-items: center;
   justify-content: center;
-
   gap: 10px;
-
   padding: 60px 24px;
-
   color: var(--text-secondary);
-
   font-size: 14px;
 }
 
 .spinner {
   width: 20px;
   height: 20px;
-
   border: 2px solid var(--border-primary);
   border-top-color: var(--color-primary);
-
   border-radius: 50%;
-
   animation: spin 0.7s linear infinite;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
-/* CHARTS ROW */
+/* ── CHARTS ROW ── */
 .charts-row {
   display: flex;
   gap: 20px;
-
   align-items: stretch;
 }
 
-/* CHART BOX */
+/* ── CHART BOX ── */
 .chart-box {
   flex: 1 1 0;
-
   min-width: 0;
-
   background: var(--bg-card);
-
   border: 1px solid var(--border-primary);
-
   border-radius: 14px;
-
   padding: 20px;
-
   display: flex;
   flex-direction: column;
-
   box-sizing: border-box;
-
   margin-bottom: 5px;
 }
 
-/* CHART HEADER */
+/* ── CHART HEADER ── */
 .chart-box__header {
   display: flex;
   align-items: center;
-
   gap: 8px;
-
   margin-bottom: 18px;
 }
 
 .chart-box__icon {
   width: 30px;
   height: 30px;
-
   border-radius: 8px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   flex-shrink: 0;
 }
 
-.chart-box__icon--income {
-  background: #7cf1d4;
-  color: #0F6E56;
-}
-
-.chart-box__icon--expense {
-  background: #f89a7a;
-  color: #993C1D;
-}
+.chart-box__icon--income  { background: #7cf1d4; color: #0F6E56; }
+.chart-box__icon--expense { background: #f89a7a; color: #993C1D; }
 
 .chart-box__title {
   font-size: 14px;
   font-weight: 600;
-
   margin: 0;
 }
 
-.chart-box__title--income {
-  color: #0F6E56;
-}
+.chart-box__title--income  { color: #0F6E56; }
+.chart-box__title--expense { color: #993C1D; }
 
-.chart-box__title--expense {
-  color: #993C1D;
-}
-
-/* CHART CONTENT */
+/* ── CHART CONTENT ── */
 .chart-content {
   display: flex;
   align-items: center;
-
   gap: 20px;
-
   flex: 1;
 }
 
-/* DONUT */
+/* ── DONUT ── */
 .chart-donut-wrap {
   position: relative;
-
   width: 160px;
   height: 160px;
-
   flex-shrink: 0;
 }
 
@@ -518,96 +434,63 @@ onBeforeUnmount(() => destroyCharts())
 .chart-center {
   position: absolute;
   inset: 0;
-
   display: flex;
   flex-direction: column;
-
   align-items: center;
   justify-content: center;
-
   pointer-events: none;
 }
 
 .chart-center__count {
   font-size: 26px;
   font-weight: 700;
-
   color: var(--text-primary);
-
   line-height: 1;
 }
 
 .chart-center__label {
   font-size: 11px;
-
   color: var(--text-secondary);
-
   margin-top: 4px;
 }
 
-/* LEGEND */
+/* ── LEGEND ── */
 .legend {
   flex: 1;
-
   display: flex;
   flex-direction: column;
-
   gap: 9px;
-
   overflow-y: auto;
   overflow-x: hidden;
-
   min-width: 0;
-
   max-height: 180px;
-
   padding-right: 4px;
 }
 
-/* SCROLLBAR */
-.legend::-webkit-scrollbar {
-  width: 6px;
-}
+.legend::-webkit-scrollbar       { width: 6px; }
+.legend::-webkit-scrollbar-track { background: transparent; }
+.legend::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 20px; }
+.legend::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
-.legend::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.legend::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 20px;
-}
-
-.legend::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
-}
-
-/* LEGEND ITEM */
+/* ── LEGEND ITEM ── */
 .legend-item {
   display: flex;
   align-items: center;
-
   gap: 8px;
-
   font-size: 13px;
-
   min-width: 0;
 }
 
 .legend-dot {
   width: 10px;
   height: 10px;
-
   border-radius: 3px;
-
   flex-shrink: 0;
 }
 
 .legend-label {
   flex: 1;
-
   color: var(--text-primary);
-
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -615,62 +498,62 @@ onBeforeUnmount(() => destroyCharts())
 
 .legend-badge {
   font-size: 10px;
-
   background: var(--bg-card);
-
   color: var(--text-secondary);
-
   border-radius: 4px;
-
   padding: 2px 6px;
-
   flex-shrink: 0;
 }
 
-/* EMPTY */
+/* ── EMPTY ── */
 .chart-empty {
   display: flex;
   align-items: center;
   justify-content: center;
-
   flex: 1;
-
   min-height: 100px;
-
   color: var(--text-secondary);
-
   font-size: 13px;
 }
 
-/* RESPONSIVE */
-@media (max-width: 1024px) {
-  .chart-content {
-    gap: 16px;
-  }
+/* ── RESPONSIVE ── */
 
+/* Large tablet */
+@media (max-width: 1200px) {
   .chart-donut-wrap {
-    width: 140px;
-    height: 140px;
+    width: 130px;
+    height: 130px;
   }
 
   .chart-donut-wrap canvas {
-    width: 140px !important;
-    height: 140px !important;
+    width: 130px !important;
+    height: 130px !important;
   }
 
-  .chart-center__count {
-    font-size: 22px;
-  }
-
-  .legend {
-    max-height: 160px;
-  }
+  .chart-center__count { font-size: 22px; }
+  .legend { max-height: 160px; }
 }
 
-@media (max-width: 768px) {
-  .spend-card__body {
-    padding: 0 16px 16px;
+/* Tablet */
+@media (max-width: 1024px) {
+  .charts-row { gap: 16px; }
+
+  .chart-donut-wrap {
+    width: 120px;
+    height: 120px;
   }
+
+  .chart-donut-wrap canvas {
+    width: 120px !important;
+    height: 120px !important;
+  }
+
+  .chart-center__count { font-size: 20px; }
+}
+
+/* Small tablet / large mobile */
+@media (max-width: 768px) {
+  .spend-card__body { padding: 0 16px 16px; }
 
   .charts-row {
     flex-direction: column;
@@ -682,77 +565,17 @@ onBeforeUnmount(() => destroyCharts())
     padding: 16px;
   }
 
+  /* Side-by-side layout inside each full-width chart box */
   .chart-content {
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    text-align: center;
-
-    gap: 18px;
-  }
-
-  .chart-donut-wrap {
-    width: 150px;
-    height: 150px;
-  }
-
-  .chart-donut-wrap canvas {
-    width: 150px !important;
-    height: 150px !important;
-  }
-
-  .legend {
-    width: 100%;
-    max-height: 170px;
-    padding-right: 2px;
-  }
-
-  .legend-item {
-    font-size: 12px;
-  }
-
-  .legend-label {
-    text-align: left;
-  }
-
-  .chart-box__title {
-    font-size: 13px;
-  }
-}
-
-@media (max-width: 480px) {
-  .spend-card {
-    border-radius: 12px;
-  }
-
-  .spend-card__header {
-    padding: 16px 16px 0;
-  }
-
-  .spend-card__body {
-    padding: 0 12px 12px;
-  }
-
-  .chart-box {
-    padding: 14px;
-    border-radius: 12px;
-  }
-
-  .chart-box__header {
-    margin-bottom: 14px;
-  }
-
-  .chart-box__icon {
-    width: 28px;
-    height: 28px;
-  }
-
-  .chart-box__title {
-    font-size: 12px;
+    gap: 16px;
   }
 
   .chart-donut-wrap {
     width: 130px;
     height: 130px;
+    flex-shrink: 0;
   }
 
   .chart-donut-wrap canvas {
@@ -760,37 +583,59 @@ onBeforeUnmount(() => destroyCharts())
     height: 130px !important;
   }
 
-  .chart-center__count {
-    font-size: 20px;
+  .legend {
+    width: 100%;
+    max-height: 140px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .spend-card { border-radius: 12px; }
+  .spend-card__header { padding: 14px 14px 0; }
+  .spend-card__body   { padding: 0 10px 12px; }
+
+  /* Stack donut above legend on very small phones */
+  .chart-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 14px;
   }
 
-  .chart-center__label {
-    font-size: 10px;
+  .chart-box {
+    padding: 12px;
+    border-radius: 12px;
   }
+
+  .chart-box__header { margin-bottom: 12px; }
+  .chart-box__icon   { width: 26px; height: 26px; }
+  .chart-box__title  { font-size: 12px; }
+
+  .chart-donut-wrap {
+    width: 110px;
+    height: 110px;
+  }
+
+  .chart-donut-wrap canvas {
+    width: 110px !important;
+    height: 110px !important;
+  }
+
+  .chart-center__count { font-size: 18px; }
+  .chart-center__label { font-size: 10px; }
 
   .legend {
-    gap: 7px;
-    max-height: 150px;
-  }
-
-  .legend-item {
     gap: 6px;
-    font-size: 11px;
+    max-height: 130px;
+    padding-right: 2px;
   }
 
-  .legend-dot {
-    width: 8px;
-    height: 8px;
-  }
+  .legend-item  { gap: 6px; font-size: 11px; }
+  .legend-dot   { width: 8px; height: 8px; }
+  .legend-badge { font-size: 9px; padding: 2px 5px; }
+  .legend-label { text-align: left; }
 
-  .legend-badge {
-    font-size: 9px;
-    padding: 2px 5px;
-  }
-
-  .chart-empty {
-    min-height: 80px;
-    font-size: 12px;
-  }
+  .chart-empty { min-height: 80px; font-size: 12px; }
 }
 </style>

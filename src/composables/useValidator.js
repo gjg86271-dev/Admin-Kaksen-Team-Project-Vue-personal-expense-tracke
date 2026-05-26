@@ -1,4 +1,4 @@
-import { reactive } from 'vue'
+ import { reactive } from 'vue'
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 const messages = {
@@ -109,6 +109,36 @@ export function useValidator(fields = []) {
     return !hasErrors()
   }
 
+  const validateForgetPassword = (form) => {
+    clearErrors()
+
+    if (!form.email.trim()) {
+      errors.email = messages.emailInvalid
+    } else if (!emailPattern.test(form.email.trim())) {
+      errors.email = messages.emailRequired
+    }
+
+    return !hasErrors()
+  }
+
+  const validateResetPassword = (form) => {
+    clearErrors()
+
+    if (!form.password) {
+      errors.password = messages.passwordMin
+    } else if (form.password.length < 8) {
+      errors.password = messages.passwordRequired
+    }
+
+    if (!form.passwordConfirmation) {
+      errors.passwordConfirmation = messages.passwordConfirmRequired
+    } else if (form.password !== form.passwordConfirmation) {
+      errors.passwordConfirmation = messages.passwordMismatch
+    }
+
+    return !hasErrors()
+  }
+
   return {
     errors,
     hasErrors,
@@ -117,5 +147,7 @@ export function useValidator(fields = []) {
     clearErrors,
     validateLogin,
     validateRegister,
+    validateForgetPassword,
+    validateResetPassword,
   }
 }

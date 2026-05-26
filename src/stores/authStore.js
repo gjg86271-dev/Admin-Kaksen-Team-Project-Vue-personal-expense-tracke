@@ -138,7 +138,7 @@ export const useAuthStore = defineStore("auth", () => {
 
   const forgotPassword = async (data) => {
     try {
-      const res = await api.post("/auth/forgot-password", data)
+      const res = await api.post("/auth/admin/forget-password", data)
       resetEmail.value = data.email
       localStorage.setItem("resetEmail", data.email)
       errorMsg.value = ""

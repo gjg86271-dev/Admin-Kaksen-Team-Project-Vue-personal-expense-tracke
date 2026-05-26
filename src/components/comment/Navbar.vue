@@ -43,14 +43,14 @@
         </button>
       </div>
 
-      <!-- Profile dropdown trigger -->
-      <div ref="profileTriggerRef" style="position:relative">
+      <!-- Profile dropdown trigger — លាក់នៅ mobile, បង្ហាញតែ desktop -->
+      <div v-if="!isMobile" ref="profileTriggerRef" style="position:relative">
         <button class="profile-btn" type="button" @click.stop="toggleProfile" aria-label="Profile menu">
           <div class="avatar">
-            <img v-if="user?.avatar" :src="user.avatar" :alt="user.name" class="avatar-img" />
+            <img v-if="userStore.avatarUrl" :src="userStore.avatarUrl" :alt="userStore.displayName" class="avatar-img" />
             <span v-else>{{ avatarInitials }}</span>
           </div>
-          <span class="profile-name">{{ user?.name || 'គណនី' }}</span>
+          <span class="profile-name">{{ userStore.displayName || 'គណនី' }}</span>
           <svg class="chevron" :class="{ open: profileOpen }" width="14" height="14" viewBox="0 0 24 24" fill="none">
             <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
@@ -134,20 +134,20 @@
     </Transition>
   </Teleport>
 
-  <!-- Profile dropdown panel -->
+  <!-- Profile dropdown panel — desktop only -->
   <Teleport to="body">
     <Transition name="panel">
-      <div v-if="profileOpen" ref="profileMenuRef"
+      <div v-if="profileOpen && !isMobile" ref="profileMenuRef"
         class="profile-panel" :style="profileStyle" @click.stop>
 
         <div class="profile-head">
           <div class="avatar avatar--lg">
-            <img v-if="user?.avatar" :src="user.avatar" :alt="user.name" class="avatar-img" />
+            <img v-if="userStore.avatarUrl" :src="userStore.avatarUrl" :alt="userStore.displayName" class="avatar-img" />
             <span v-else>{{ avatarInitials }}</span>
           </div>
           <div class="profile-head-info">
-            <p class="profile-head-name">{{ user?.name || '—' }}</p>
-            <p class="profile-head-email">{{ user?.email || '—' }}</p>
+            <p class="profile-head-name">{{ userStore.displayName || '—' }}</p>
+            <p class="profile-head-email">{{ userStore.email || '—' }}</p>
           </div>
         </div>
 
@@ -180,13 +180,19 @@
 import api from '@/api/api'
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/Userstore'
 
 defineProps({
   isMobile: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['toggle-sidebar'])
-const router = useRouter()
+const emit      = defineEmits(['toggle-sidebar'])
+const router    = useRouter()
+const userStore = useUserStore()
+
+// ── Mobile breakpoint ──────────────────────────────────────────────────────
+const MOBILE_BREAKPOINT = 768
+const isMobile = ref(window.innerWidth < MOBILE_BREAKPOINT)
 
 // ── Theme ──────────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'app-theme'
@@ -205,42 +211,10 @@ function toggleTheme() {
   applyTheme(isDark.value)
 }
 
-// ── User profile ───────────────────────────────────────────────────────────
-const user = ref(null)
-
-const avatarInitials = computed(() => {
-  const name = user.value?.name || ''
-  return name.trim().charAt(0).toUpperCase() || 'U'
-})
-
-function extractUser(responseData) {
-  const raw =
-    responseData?.data?.data ??
-    responseData?.data ??
-    responseData ??
-    null
-  if (!raw) return null
-  const normalised = { ...raw }
-  if (!normalised.name) {
-    if (raw.fullName)                    normalised.name = raw.fullName
-    else if (raw.full_name)              normalised.name = raw.full_name
-    else if (raw.firstName || raw.first_name) {
-      const first = raw.firstName || raw.first_name || ''
-      const last  = raw.lastName  || raw.last_name  || ''
-      normalised.name = `${first} ${last}`.trim()
-    } else if (raw.username)             normalised.name = raw.username
-  }
-  return normalised
-}
-
-const fetchUser = async () => {
-  try {
-    const res = await api.get('auth/profile')
-    user.value = extractUser(res.data)
-  } catch (e) {
-    console.error('fetchUser failed', e)
-  }
-}
+// ── Avatar initials ────────────────────────────────────────────────────────
+const avatarInitials = computed(() =>
+  userStore.displayName.trim().charAt(0).toUpperCase() || 'U'
+)
 
 // ── Profile dropdown ───────────────────────────────────────────────────────
 const profileOpen       = ref(false)
@@ -259,7 +233,7 @@ function positionProfile() {
   if (left + panelWidth > viewportW - 8) left = viewportW - panelWidth - 8
   profileStyle.value = {
     position: 'fixed',
-    top: `${r.bottom + 8}px`,
+    top:  `${r.bottom + 8}px`,
     left: `${left}px`,
     width: `${panelWidth}px`,
     zIndex: 999999,
@@ -267,7 +241,7 @@ function positionProfile() {
 }
 
 function toggleProfile() {
-  notifOpen.value = false
+  notifOpen.value   = false
   profileOpen.value = !profileOpen.value
   if (profileOpen.value) nextTick(positionProfile)
 }
@@ -277,8 +251,12 @@ async function handleLogout() {
   try { await api.post('auth/logout') } catch (_) {}
   localStorage.removeItem('token')
   sessionStorage.removeItem('token')
+  userStore.clearProfile()
   router.push({ name: 'login' })
 }
+
+// expose handleLogout so Sidebar can call it on mobile
+defineExpose({ handleLogout, avatarInitials })
 
 // ── Budget alerts ──────────────────────────────────────────────────────────
 const alerts       = ref([])
@@ -393,7 +371,7 @@ function positionNotif() {
   if (top + 460 > viewportH) top = r.top - 460 - 8
   notifStyle.value = {
     position: 'fixed',
-    top: `${top}px`,
+    top:  `${top}px`,
     left: `${left}px`,
     width: `${Math.min(panelWidth, viewportW - 16)}px`,
     zIndex: 999999,
@@ -402,7 +380,7 @@ function positionNotif() {
 
 function toggleNotif() {
   profileOpen.value = false
-  notifOpen.value = !notifOpen.value
+  notifOpen.value   = !notifOpen.value
   if (notifOpen.value) nextTick(positionNotif)
 }
 
@@ -413,23 +391,27 @@ function handleOutside(e) {
     profileOpen.value = false
 }
 
-const onReposition = () => {
-  if (notifOpen.value) positionNotif()
+// ── Resize — update isMobile + reposition panels ───────────────────────────
+function handleResize() {
+  isMobile.value = window.innerWidth < MOBILE_BREAKPOINT
+  // close profile panel if switching to mobile
+  if (isMobile.value) profileOpen.value = false
+  if (notifOpen.value)   positionNotif()
   if (profileOpen.value) positionProfile()
 }
 
 onMounted(() => {
-  fetchUser()
+  userStore.fetchProfile()
   fetchBudgetAlerts()
   document.addEventListener('click', handleOutside)
-  window.addEventListener('resize', onReposition)
-  window.addEventListener('scroll', onReposition, true)
+  window.addEventListener('resize', handleResize)
+  window.addEventListener('scroll', handleResize, true)
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleOutside)
-  window.removeEventListener('resize', onReposition)
-  window.removeEventListener('scroll', onReposition, true)
+  window.removeEventListener('resize', handleResize)
+  window.removeEventListener('scroll', handleResize, true)
 })
 </script>
 
@@ -590,29 +572,17 @@ onUnmounted(() => {
 }
 
 .avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: rgba(26, 98, 212, 0.2);
-  color: var(--text-white);
-  display: grid;
-  place-items: center;
-  font-size: 12px;
-  font-weight: 700;
-  flex-shrink: 0;
-  overflow: hidden;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: rgba(26, 98, 212, 0.2); color: var(--text-white);
+  display: grid; place-items: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0; overflow: hidden;
 }
 .avatar--lg { width: 42px; height: 42px; font-size: 15px; }
 .avatar-img { width: 100%; height: 100%; object-fit: cover; }
 
 .profile-name {
-  font-size: 13px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, .9);
-  max-width: 100px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 13px; font-weight: 500; color: rgba(255, 255, 255, .9);
+  max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
 .chevron { transition: transform .2s; opacity: .6; color: var(--text-white); }
@@ -629,62 +599,32 @@ onUnmounted(() => {
 }
 
 .profile-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-  border-bottom: 1px solid var(--border-color);
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px; border-bottom: 1px solid var(--border-color);
 }
-
 .profile-head-info { min-width: 0; }
-
 .profile-head-name {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 14px; font-weight: 700; color: var(--text-primary);
+  margin: 0 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-
 .profile-head-email {
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 11px; color: var(--text-secondary); margin: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
 .profile-list { padding: 6px; }
-
 .profile-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 10px;
-  border-radius: 8px;
-  font-size: 13px;
-  color: var(--text-primary);
-  text-decoration: none;
-  background: none;
-  border: none;
-  width: 100%;
-  text-align: left;
-  cursor: pointer;
-  transition: var(--transition);
-  font-family: var(--font-khmer);
+  display: flex; align-items: center; gap: 10px; padding: 9px 10px;
+  border-radius: 8px; font-size: 13px; color: var(--text-primary);
+  text-decoration: none; background: none; border: none;
+  width: 100%; text-align: left; cursor: pointer;
+  transition: var(--transition); font-family: var(--font-khmer);
 }
 .profile-item:hover { background: var(--bg-input); }
 .profile-item svg { flex-shrink: 0; opacity: .55; }
 .profile-item:hover svg { opacity: 1; }
 
-.profile-sep {
-  height: 1px;
-  background: var(--border-color);
-  margin: 4px 0;
-}
+.profile-sep { height: 1px; background: var(--border-color); margin: 4px 0; }
 
 .profile-item--danger { color: var(--color-danger); }
 .profile-item--danger svg { opacity: .7; }

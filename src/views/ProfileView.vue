@@ -66,10 +66,27 @@
         <div class="field-stack">
           <div class="field-item">
             <label class="field-label">ឈ្មោះពេញ</label>
-            <div class="field-input-wrap" :class="{ 'field-input-wrap--active': isEditing }">
+            <div
+              class="field-input-wrap"
+              :class="{
+                'field-input-wrap--active': isEditing,
+                'field-input-wrap--error': profileErrors.fullName
+              }"
+            >
               <i class="bi bi-person field-icon"></i>
-              <input v-model="form.fullName" type="text" class="field-input" placeholder="System Admin" :readonly="!isEditing" />
+              <input
+                v-model="form.fullName"
+                type="text"
+                class="field-input"
+                placeholder="System Admin"
+                :readonly="!isEditing"
+                @input="clearProfileError('fullName')"
+              />
             </div>
+            <span v-if="profileErrors.fullName" class="field-error">
+              <i class="bi bi-exclamation-circle-fill"></i>
+              {{ profileErrors.fullName }}
+            </span>
           </div>
           <div class="field-item">
             <label class="field-label">តួនាទី</label>
@@ -118,7 +135,8 @@
         </div>
         <div v-if="!showPasswordForm" class="card-idle">
           <div class="idle-dots">
-            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
           </div>
           <p class="idle-hint">ផ្លាស់ប្ដូរពាក្យសម្ងាត់គណនីរបស់អ្នក</p>
         </div>
@@ -126,23 +144,43 @@
           <div v-if="showPasswordForm" class="field-stack">
             <div class="field-item" v-for="(cfg, key) in pwFields" :key="key">
               <label class="field-label">{{ cfg.label }}</label>
-              <div class="field-input-wrap field-input-wrap--active">
+              <div
+                class="field-input-wrap field-input-wrap--active"
+                :class="{ 'field-input-wrap--error': passwordErrors[key] }"
+              >
                 <i class="bi bi-key field-icon"></i>
                 <input
                   v-model="passwordForm[key]"
                   :type="showPasswords[key] ? 'text' : 'password'"
                   class="field-input"
-                  :class="{ 'field-input--error': key === 'confirm' && passwordForm.confirm && passwordForm.confirm !== passwordForm.newPass }"
                   placeholder="••••••••"
+                  @input="clearPasswordError(key)"
                 />
                 <button class="eye-btn" type="button" @click="showPasswords[key] = !showPasswords[key]">
                   <i :class="showPasswords[key] ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
                 </button>
               </div>
-              <span v-if="key === 'confirm' && passwordForm.confirm && passwordForm.confirm !== passwordForm.newPass" class="field-error">
-                ពាក្យសម្ងាត់មិនត្រូវគ្នា
+              <span v-if="passwordErrors[key]" class="field-error">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                {{ passwordErrors[key] }}
               </span>
             </div>
+
+            <!-- Password strength meter (only when typing new password) -->
+            <div v-if="passwordForm.newPass" class="pw-strength">
+              <div class="pw-strength__bars">
+                <span
+                  v-for="n in 4"
+                  :key="n"
+                  class="pw-strength__bar"
+                  :class="pwStrength.score >= n ? `pw-strength__bar--${pwStrength.level}` : ''"
+                ></span>
+              </div>
+              <span class="pw-strength__label" :class="`pw-strength__label--${pwStrength.level}`">
+                {{ pwStrength.label }}
+              </span>
+            </div>
+
             <div class="action-row">
               <button class="pill-btn pill-btn--primary" @click="submitChangePassword" :disabled="loadingPassword">
                 <span v-if="loadingPassword" class="spinner"></span>
@@ -178,6 +216,7 @@
         </div>
         <Transition name="slide-up">
           <div v-if="showEmailForm">
+            <!-- Step 1: Enter new email + password -->
             <div v-if="emailStep === 1" class="field-stack">
               <div class="step-indicator">
                 <span class="step-dot step-dot--active">1</span>
@@ -187,20 +226,46 @@
               </div>
               <div class="field-item">
                 <label class="field-label">អ៊ីមែលថ្មី</label>
-                <div class="field-input-wrap field-input-wrap--active">
+                <div
+                  class="field-input-wrap field-input-wrap--active"
+                  :class="{ 'field-input-wrap--error': emailErrors.newEmail }"
+                >
                   <i class="bi bi-envelope field-icon"></i>
-                  <input v-model="emailForm.newEmail" type="email" class="field-input" placeholder="example@email.com" />
+                  <input
+                    v-model="emailForm.newEmail"
+                    type="email"
+                    class="field-input"
+                    placeholder="example@email.com"
+                    @input="clearEmailError('newEmail')"
+                  />
                 </div>
+                <span v-if="emailErrors.newEmail" class="field-error">
+                  <i class="bi bi-exclamation-circle-fill"></i>
+                  {{ emailErrors.newEmail }}
+                </span>
               </div>
               <div class="field-item">
                 <label class="field-label">ពាក្យសម្ងាត់</label>
-                <div class="field-input-wrap field-input-wrap--active">
+                <div
+                  class="field-input-wrap field-input-wrap--active"
+                  :class="{ 'field-input-wrap--error': emailErrors.password }"
+                >
                   <i class="bi bi-key field-icon"></i>
-                  <input v-model="emailForm.password" :type="showEmailPassword ? 'text' : 'password'" class="field-input" placeholder="••••••••" />
+                  <input
+                    v-model="emailForm.password"
+                    :type="showEmailPassword ? 'text' : 'password'"
+                    class="field-input"
+                    placeholder="••••••••"
+                    @input="clearEmailError('password')"
+                  />
                   <button class="eye-btn" type="button" @click="showEmailPassword = !showEmailPassword">
                     <i :class="showEmailPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
                   </button>
                 </div>
+                <span v-if="emailErrors.password" class="field-error">
+                  <i class="bi bi-exclamation-circle-fill"></i>
+                  {{ emailErrors.password }}
+                </span>
               </div>
               <p class="step-hint" style="margin-top: 0;">
                 <i class="bi bi-info-circle" style="color: #06b6d4;"></i>
@@ -214,6 +279,8 @@
                 </button>
               </div>
             </div>
+
+            <!-- Step 2: Waiting for verification -->
             <div v-else-if="emailStep === 2" class="field-stack">
               <div class="step-indicator">
                 <span class="step-dot step-dot--done"><i class="bi bi-check"></i></span>
@@ -245,10 +312,9 @@
         </Transition>
       </div>
 
-  
     </div>
 
-    <!-- ── Success Alert Modal ── -->
+    <!-- Success Alert Modal -->
     <Transition name="modal">
       <div v-if="successAlert.show" class="modal-overlay" @click.self="successAlert.show = false">
         <div class="modal-box modal-box--success">
@@ -348,18 +414,20 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
+import { useUserStore } from '@/stores/Userstore'
 
-const router = useRouter()
+const router    = useRouter()
+const userStore = useUserStore()
 
-// ── Toast (for errors) ─────────────────────────────────────────────────────
+// ── Toast ──────────────────────────────────────────────────────────────────
 const toast = reactive({ show: false, message: '', type: 'error' })
 let toastTimer = null
 function showToast(message, type = 'error') {
   clearTimeout(toastTimer)
   toast.message = message
-  toast.type = type
-  toast.show = true
-  toastTimer = setTimeout(() => (toast.show = false), 3500)
+  toast.type    = type
+  toast.show    = true
+  toastTimer    = setTimeout(() => (toast.show = false), 3500)
 }
 
 // ── Success Alert Modal ────────────────────────────────────────────────────
@@ -379,7 +447,7 @@ const loadingDelete   = ref(false)
 const loadingEmail    = ref(false)
 
 // ── Form ───────────────────────────────────────────────────────────────────
-const form = reactive({ fullName: '', email: '', role: '', registeredAt: '' })
+const form     = reactive({ fullName: '', email: '', role: '', registeredAt: '' })
 const original = reactive({ ...form })
 
 // ── Avatar ─────────────────────────────────────────────────────────────────
@@ -410,9 +478,10 @@ async function handleUpload(event) {
   event.target.value = ''
   if (!file) return
   if (!file.type.startsWith('image/')) { showToast('សូមជ្រើសរើសរូបភាពត្រឹមត្រូវ។'); return }
+  if (file.size > 5 * 1024 * 1024) { showToast('រូបភាពធំពេក។ សូមជ្រើសរើសរូបភាពតូចជាង 5MB។'); return }
   if (cropper) { cropper.destroy(); cropper = null }
   if (cropperImage.value.startsWith('blob:')) URL.revokeObjectURL(cropperImage.value)
-  cropperImage.value = URL.createObjectURL(file)
+  cropperImage.value  = URL.createObjectURL(file)
   showCropModal.value = true
 }
 
@@ -437,11 +506,13 @@ async function cropAndUpload() {
   loadingAvatar.value = true
   try {
     const canvas = cropper.getCroppedCanvas({ width: 256, height: 256 })
-    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92))
-    const fd = new FormData()
+    const blob   = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92))
+    const fd     = new FormData()
     fd.append('avatar', blob, 'avatar.jpg')
-    const res = await api.put('auth/profile/avatar', fd)
-    avatarUrl.value = res.data?.data?.avatar ?? res.data?.avatar ?? canvas.toDataURL()
+    const res        = await api.put('auth/profile/avatar', fd)
+    const newAvatar  = res.data?.data?.avatar ?? res.data?.avatar ?? canvas.toDataURL()
+    avatarUrl.value  = newAvatar
+    userStore.updateLocal({ avatar: newAvatar })
     showCropModal.value = false
     cropper.destroy(); cropper = null
     if (cropperImage.value.startsWith('blob:')) { URL.revokeObjectURL(cropperImage.value); cropperImage.value = '' }
@@ -460,6 +531,7 @@ async function removeAvatar() {
   try {
     await api.delete('auth/profile/avatar')
     avatarUrl.value = null
+    userStore.updateLocal({ avatar: null })
     showSuccess('រូបភាពត្រូវបានលុប!', 'រូបថតប្រវត្តិរូបត្រូវបានដកចេញដោយជោគជ័យ។', 'bi-trash3-fill')
   } catch (err) {
     showToast(err.response?.data?.message ?? 'មិនអាចលុបរូបភាពបានទេ។')
@@ -468,18 +540,43 @@ async function removeAvatar() {
   }
 }
 
-// ── Profile edit ───────────────────────────────────────────────────────────
+// ── Profile edit + validation ──────────────────────────────────────────────
+const profileErrors = reactive({ fullName: '' })
+
+function clearProfileError(field) {
+  profileErrors[field] = ''
+}
+
+function validateProfile() {
+  profileErrors.fullName = ''
+  const name = form.fullName.trim()
+  if (!name) {
+    profileErrors.fullName = 'សូមបំពេញឈ្មោះរបស់អ្នក'
+    return false
+  }
+  if (name.length < 2) {
+    profileErrors.fullName = 'ឈ្មោះត្រូវតែមានយ៉ាងហោចណាស់ 2 តួអក្សរ'
+    return false
+  }
+  if (name.length > 100) {
+    profileErrors.fullName = 'ឈ្មោះវែងពេក (អតិបរមា 100 តួអក្សរ)'
+    return false
+  }
+  return true
+}
+
 const isEditing = ref(false)
-function startEdit()  { Object.assign(original, form); isEditing.value = true }
-function cancelEdit() { Object.assign(form, original); isEditing.value = false }
+function startEdit()  { Object.assign(original, form); profileErrors.fullName = ''; isEditing.value = true }
+function cancelEdit() { Object.assign(form, original); profileErrors.fullName = ''; isEditing.value = false }
 
 async function saveEdit() {
-  if (!form.fullName.trim()) { showToast('សូមបញ្ចូលឈ្មោះ។'); return }
+  if (!validateProfile()) return
   loadingSave.value = true
   try {
     await api.put('auth/profile', { fullName: form.fullName.trim() })
     Object.assign(original, form)
     isEditing.value = false
+    userStore.updateLocal({ fullName: form.fullName.trim() })
     showSuccess('ប្រវត្តិរូបបានរក្សាទុក!', `ឈ្មោះរបស់អ្នកត្រូវបានផ្លាស់ប្ដូរទៅ "${form.fullName}" ដោយជោគជ័យ។`, 'bi-person-fill-check')
   } catch (err) {
     showToast(err.response?.data?.message ?? 'មិនអាចរក្សាទុកបានទេ។')
@@ -488,55 +585,176 @@ async function saveEdit() {
   }
 }
 
-// ── Password ───────────────────────────────────────────────────────────────
+// ── Password + validation ──────────────────────────────────────────────────
 const showPasswordForm = ref(false)
-const passwordForm = reactive({ current: '', newPass: '', confirm: '' })
-const showPasswords = reactive({ current: false, newPass: false, confirm: false })
+const passwordForm     = reactive({ current: '', newPass: '', confirm: '' })
+const showPasswords    = reactive({ current: false, newPass: false, confirm: false })
+const passwordErrors   = reactive({ current: '', newPass: '', confirm: '' })
+
 const pwFields = {
   current: { label: 'ពាក្យសម្ងាត់បច្ចុប្បន្ន' },
   newPass: { label: 'ពាក្យសម្ងាត់ថ្មី' },
   confirm: { label: 'បញ្ជាក់ពាក្យសម្ងាត់ថ្មី' },
 }
-function openPasswordForm()  { Object.assign(passwordForm, { current: '', newPass: '', confirm: '' }); showPasswordForm.value = true }
-function closePasswordForm() { showPasswordForm.value = false }
+
+// Password strength meter
+const pwStrength = computed(() => {
+  const pw = passwordForm.newPass
+  if (!pw) return { score: 0, level: 'weak', label: '' }
+  let score = 0
+  if (pw.length >= 8)  score++
+  if (pw.length >= 12) score++
+  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++
+  if (/[0-9]/.test(pw)) score++
+  if (/[^A-Za-z0-9]/.test(pw)) score = Math.min(score + 1, 4)
+  score = Math.min(score, 4)
+  const map = {
+    0: { level: 'weak',   label: 'ខ្សោយណាស់' },
+    1: { level: 'weak',   label: 'ខ្សោយ' },
+    2: { level: 'fair',   label: 'មធ្យម' },
+    3: { level: 'good',   label: 'ល្អ' },
+    4: { level: 'strong', label: 'ខ្លាំងណាស់' },
+  }
+  return { score, ...map[score] }
+})
+
+function clearPasswordError(field) {
+  passwordErrors[field] = ''
+  // Re-check confirm match live
+  if (field === 'newPass' && passwordErrors.confirm) {
+    passwordErrors.confirm = ''
+  }
+}
+
+function validatePasswordForm() {
+  passwordErrors.current = ''
+  passwordErrors.newPass = ''
+  passwordErrors.confirm = ''
+  let valid = true
+
+  if (!passwordForm.current) {
+    passwordErrors.current = 'សូមបំពេញពាក្យសម្ងាត់បច្ចុប្បន្ន'
+    valid = false
+  }
+
+  if (!passwordForm.newPass) {
+    passwordErrors.newPass = 'សូមបំពេញពាក្យសម្ងាត់ថ្មី'
+    valid = false
+  } else if (passwordForm.newPass.length < 8) {
+    passwordErrors.newPass = 'ពាក្យសម្ងាត់ត្រូវតែមានយ៉ាងហោចណាស់ 8 តួអក្សរ'
+    valid = false
+  } else if (!/[A-Z]/.test(passwordForm.newPass)) {
+    passwordErrors.newPass = 'ត្រូវមានអក្សរធំមួយ (A–Z)'
+    valid = false
+  } else if (!/[0-9]/.test(passwordForm.newPass)) {
+    passwordErrors.newPass = 'ត្រូវមានលេខមួយ (0–9)'
+    valid = false
+  } else if (passwordForm.newPass === passwordForm.current) {
+    passwordErrors.newPass = 'ពាក្យសម្ងាត់ថ្មីត្រូវខុសពីពាក្យសម្ងាត់បច្ចុប្បន្ន'
+    valid = false
+  }
+
+  if (!passwordForm.confirm) {
+    passwordErrors.confirm = 'សូមបញ្ជាក់ពាក្យសម្ងាត់ថ្មី'
+    valid = false
+  } else if (passwordForm.confirm !== passwordForm.newPass) {
+    passwordErrors.confirm = 'ពាក្យសម្ងាត់មិនត្រូវគ្នា'
+    valid = false
+  }
+
+  return valid
+}
+
+function openPasswordForm() {
+  Object.assign(passwordForm, { current: '', newPass: '', confirm: '' })
+  Object.assign(passwordErrors, { current: '', newPass: '', confirm: '' })
+  showPasswordForm.value = true
+}
+function closePasswordForm() {
+  showPasswordForm.value = false
+  Object.assign(passwordErrors, { current: '', newPass: '', confirm: '' })
+}
 
 async function submitChangePassword() {
-  if (!passwordForm.current || !passwordForm.newPass || !passwordForm.confirm) { showToast('សូមបំពេញព័ត៌មានទាំងអស់។'); return }
-  if (passwordForm.newPass !== passwordForm.confirm) { showToast('ពាក្យសម្ងាត់ថ្មីមិនត្រូវគ្នាទេ។'); return }
-  if (passwordForm.newPass.length < 6) { showToast('ពាក្យសម្ងាត់ត្រូវមាន 6 តួអក្សរ+។'); return }
+  if (!validatePasswordForm()) return
   loadingPassword.value = true
   try {
-    await api.put('auth/change-password', { currentPassword: passwordForm.current, newPassword: passwordForm.newPass })
+    await api.put('auth/change-password', {
+      currentPassword: passwordForm.current,
+      newPassword: passwordForm.newPass,
+    })
     showPasswordForm.value = false
     Object.assign(passwordForm, { current: '', newPass: '', confirm: '' })
-    showSuccess('ពាក្យសម្ងាត់បានផ្លាស់ប្ដូរ!', 'ពាក្យសម្ងាត់ថ្មីរបស់អ្នកត្រូវបានរក្សាទុករួចរាល់។ សូមប្រើវានៅ login លើក​ក្រោយ។', 'bi-shield-fill-check')
+    showSuccess(
+      'ពាក្យសម្ងាត់បានផ្លាស់ប្ដូរ!',
+      'ពាក្យសម្ងាត់ថ្មីរបស់អ្នកត្រូវបានរក្សាទុករួចរាល់។ សូមប្រើវានៅ login លើក​ក្រោយ។',
+      'bi-shield-fill-check'
+    )
   } catch (err) {
-    showToast(err.response?.data?.message ?? 'មិនអាចផ្លាស់ប្ដូរបានទេ។')
+    const msg = err.response?.data?.message ?? 'មិនអាចផ្លាស់ប្ដូរបានទេ។'
+    // Surface API error into the current-password field if it's a credential issue
+    if (err.response?.status === 401 || msg.toLowerCase().includes('current') || msg.toLowerCase().includes('incorrect')) {
+      passwordErrors.current = 'ពាក្យសម្ងាត់បច្ចុប្បន្នមិនត្រឹមត្រូវ'
+    } else {
+      showToast(msg)
+    }
   } finally {
     loadingPassword.value = false
   }
 }
 
-// ── Email ──────────────────────────────────────────────────────────────────
+// ── Email + validation ─────────────────────────────────────────────────────
 const showEmailForm          = ref(false)
 const emailStep              = ref(1)
 const showEmailPassword      = ref(false)
 const showEmailVerifiedModal = ref(false)
 const verifiedNewEmail       = ref('')
-const emailForm = reactive({ newEmail: '', password: '', token: '' })
+const emailForm              = reactive({ newEmail: '', password: '', token: '' })
+const emailErrors            = reactive({ newEmail: '', password: '' })
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+function clearEmailError(field) {
+  emailErrors[field] = ''
+}
+
+function validateEmailForm() {
+  emailErrors.newEmail = ''
+  emailErrors.password = ''
+  let valid = true
+
+  if (!emailForm.newEmail.trim()) {
+    emailErrors.newEmail = 'សូមបំពេញអ៊ីមែលថ្មី'
+    valid = false
+  } else if (!EMAIL_PATTERN.test(emailForm.newEmail.trim())) {
+    emailErrors.newEmail = 'រូបភាពអ៊ីមែលមិនត្រឹមត្រូវ (example@domain.com)'
+    valid = false
+  } else if (emailForm.newEmail.trim().toLowerCase() === form.email.trim().toLowerCase()) {
+    emailErrors.newEmail = 'អ៊ីមែលថ្មីត្រូវតែខុសពីអ៊ីមែលបច្ចុប្បន្ន'
+    valid = false
+  }
+
+  if (!emailForm.password) {
+    emailErrors.password = 'សូមបំពេញពាក្យសម្ងាត់'
+    valid = false
+  }
+
+  return valid
+}
 
 function openEmailForm() {
   Object.assign(emailForm, { newEmail: '', password: '', token: '' })
-  emailStep.value = 1
+  Object.assign(emailErrors, { newEmail: '', password: '' })
+  emailStep.value     = 1
   showEmailForm.value = true
 }
-function closeEmailForm() { showEmailForm.value = false }
+function closeEmailForm() {
+  showEmailForm.value = false
+  Object.assign(emailErrors, { newEmail: '', password: '' })
+}
 
 async function requestChangeEmail() {
-  if (!emailForm.newEmail || !emailForm.password) { showToast('សូមបំពេញព័ត៌មានទាំងអស់។'); return }
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(emailForm.newEmail)) { showToast('អ៊ីមែលមិនត្រឹមត្រូវទម្រង់។'); return }
-  if (emailForm.newEmail.trim().toLowerCase() === form.email.trim().toLowerCase()) { showToast('អ៊ីមែលថ្មីត្រូវតែខុសពីអ៊ីមែលបច្ចុប្បន្ន។'); return }
+  if (emailStep.value === 1 && !validateEmailForm()) return
   loadingEmail.value = true
   try {
     await api.post('auth/change-email/request', {
@@ -545,9 +763,15 @@ async function requestChangeEmail() {
     })
     emailStep.value = 2
   } catch (err) {
-    const details = err.response?.data?.details
+    const details  = err.response?.data?.details
     const firstMsg = Array.isArray(details) && details.length > 0 ? details[0]?.message : null
-    showToast(firstMsg ?? err.response?.data?.message ?? 'មិនអាចផ្ញើបានទេ។')
+    const msg      = firstMsg ?? err.response?.data?.message ?? 'មិនអាចផ្ញើបានទេ។'
+    // Surface password errors back into the field
+    if (err.response?.status === 401 || msg.toLowerCase().includes('password') || msg.toLowerCase().includes('ពាក្យ')) {
+      emailErrors.password = 'ពាក្យសម្ងាត់មិនត្រឹមត្រូវ'
+    } else {
+      showToast(msg)
+    }
   } finally {
     loadingEmail.value = false
   }
@@ -555,14 +779,20 @@ async function requestChangeEmail() {
 
 async function handleEmailVerifyRedirect() {
   const urlParams = new URLSearchParams(window.location.search)
-  const token = urlParams.get('token')
+  const token     = urlParams.get('token')
   if (!token) return
   window.history.replaceState({}, '', window.location.pathname)
   try {
-    const res = await api.post('auth/change-email/verify', { token: token.trim() })
+    const res      = await api.post('auth/change-email/verify', { token: token.trim() })
     const newEmail = res.data?.data?.email ?? res.data?.email ?? null
-    if (newEmail) { form.email = newEmail; verifiedNewEmail.value = newEmail }
-    else { await fetchProfile(); verifiedNewEmail.value = form.email }
+    if (newEmail) {
+      form.email             = newEmail
+      verifiedNewEmail.value = newEmail
+      userStore.updateLocal({ email: newEmail })
+    } else {
+      await fetchProfile()
+      verifiedNewEmail.value = form.email
+    }
     showEmailVerifiedModal.value = true
   } catch (err) {
     showToast(err.response?.data?.message ?? 'Token មិនត្រឹមត្រូវ ឬផុតកំណត់។')
@@ -579,6 +809,7 @@ async function deleteAccount() {
     await api.delete('auth/profile')
     localStorage.removeItem('token')
     localStorage.removeItem('role')
+    userStore.clearProfile()
     showModal.value = false
     router.push('/login')
   } catch (err) {
@@ -599,6 +830,7 @@ async function fetchProfile() {
     form.role         = data.role?.name   ?? ''
     form.registeredAt = data.registeredAt ?? ''
     if (data.avatar) avatarUrl.value = data.avatar
+    userStore.updateLocal(data)
   } catch (err) {
     showToast(err.response?.data?.message ?? 'មិនអាចទាញប្រវត្តិរូបបានទេ។')
   }
@@ -648,8 +880,6 @@ onMounted(async () => {
 .avatar-ring-glow {
   position: absolute; inset: -4px; border-radius: 50%; border: 2px solid transparent;
   background: linear-gradient(135deg, #6366f1, #8b5cf6, #06b6d4) border-box;
-  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: destination-out; mask-composite: exclude;
   opacity: 0; transition: opacity 0.2s; pointer-events: none;
 }
 .avatar-ring:hover .avatar-ring-glow { opacity: 1; }
@@ -685,7 +915,6 @@ onMounted(async () => {
   border-radius: 18px; padding: 1.5rem; transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 .glass-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.07); transform: translateY(-1px); }
-.glass-card--danger { background: color-mix(in srgb, #ef4444 4%, var(--bg-card, #ffffff)); border-color: rgba(239,68,68,0.2); }
 .glass-card__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
 .glass-card__title-group { display: flex; align-items: center; gap: 10px; }
 .glass-card__icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
@@ -694,10 +923,9 @@ onMounted(async () => {
 .glass-card__icon--teal   { background: rgba(6,182,212,0.12);  color: #06b6d4; }
 .glass-card__icon--red    { background: rgba(239,68,68,0.12);  color: #ef4444; }
 .glass-card__title { font-size: 15px; font-weight: 700; color: var(--text-primary, #111827); margin: 0; }
-.glass-card__title--danger { color: #dc2626; }
 
 .field-stack { display: flex; flex-direction: column; gap: 1rem; }
-.field-item { display: flex; flex-direction: column; gap: 6px; }
+.field-item  { display: flex; flex-direction: column; gap: 5px; }
 .field-label { font-size: 11px; font-weight: 700; color: var(--text-secondary, #6b7280); text-transform: uppercase; letter-spacing: 0.06em; }
 .field-input-wrap {
   display: flex; align-items: center; border: 1.5px solid var(--border-color, #e5e7eb);
@@ -705,17 +933,38 @@ onMounted(async () => {
   transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 .field-input-wrap--active { border-color: #6366f1; background: var(--bg-card, #fff); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
-.field-icon { color: var(--text-secondary, #9ca3af); font-size: 15px; flex-shrink: 0; }
+.field-input-wrap--error  { border-color: #ef4444 !important; box-shadow: 0 0 0 3px rgba(239,68,68,0.1) !important; background: var(--bg-card, #fff) !important; }
+.field-icon  { color: var(--text-secondary, #9ca3af); font-size: 15px; flex-shrink: 0; }
 .field-input { flex: 1; border: none; background: transparent; outline: none; padding: 11px 0; font-size: 14px; color: var(--text-primary, #111827); font-family: inherit; }
 .field-input[readonly] { color: var(--text-secondary, #6b7280); cursor: default; }
 .field-input::placeholder { color: var(--text-secondary, #9ca3af); }
-.field-input-wrap:has(.field-input--error) { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
-.field-error { font-size: 12px; color: #ef4444; }
+.field-error {
+  font-size: 12px; color: #ef4444; display: flex; align-items: center; gap: 5px;
+  animation: shake-in 0.2s ease;
+}
+@keyframes shake-in {
+  0%   { opacity: 0; transform: translateX(-4px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
 .eye-btn { background: none; border: none; cursor: pointer; color: var(--text-secondary, #9ca3af); font-size: 16px; padding: 0; line-height: 1; transition: color 0.15s; flex-shrink: 0; }
 .eye-btn:hover { color: var(--text-primary, #374151); }
 .action-row { display: flex; gap: 8px; margin-top: 0.25rem; }
 
-/* Cropper */
+/* ── Password strength ─────────────────────────────────────────────────── */
+.pw-strength { display: flex; align-items: center; gap: 10px; }
+.pw-strength__bars { display: flex; gap: 4px; flex: 1; }
+.pw-strength__bar { flex: 1; height: 4px; border-radius: 999px; background: var(--border-color, #e5e7eb); transition: background 0.3s ease; }
+.pw-strength__bar--weak   { background: #ef4444; }
+.pw-strength__bar--fair   { background: #f59e0b; }
+.pw-strength__bar--good   { background: #3b82f6; }
+.pw-strength__bar--strong { background: #10b981; }
+.pw-strength__label { font-size: 11px; font-weight: 700; white-space: nowrap; transition: color 0.3s; }
+.pw-strength__label--weak   { color: #ef4444; }
+.pw-strength__label--fair   { color: #f59e0b; }
+.pw-strength__label--good   { color: #3b82f6; }
+.pw-strength__label--strong { color: #10b981; }
+
+/* ── Crop modal ───────────────────────────────────────────────────────────── */
 .crop-modal {
   width: 95%; max-width: 520px; background: var(--bg-card, #ffffff);
   border-radius: 24px; padding: 1.5rem; display: flex; flex-direction: column;
@@ -725,6 +974,7 @@ onMounted(async () => {
 .cropper-wrapper { width: 100%; height: 400px; position: relative; border-radius: 16px; background: #111827; overflow: hidden; }
 .crop-image { max-width: 100%; display: block; }
 
+/* ── Pill buttons ─────────────────────────────────────────────────────────── */
 .pill-btn {
   display: inline-flex; align-items: center; gap: 6px; border: none; border-radius: 999px;
   padding: 9px 20px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
@@ -741,7 +991,7 @@ onMounted(async () => {
 .pill-btn--success-ok { background: linear-gradient(135deg, #10b981, #059669); color: #fff; flex: 1; justify-content: center; }
 .pill-btn--success-ok:not(:disabled):hover { background: linear-gradient(135deg, #059669, #047857); box-shadow: 0 4px 14px rgba(16,185,129,0.4); }
 
-/* Success icon */
+/* ── Success icon ─────────────────────────────────────────────────────────── */
 .success-icon-wrap { display: flex; justify-content: center; margin-bottom: 0.25rem; }
 .success-icon-ring {
   width: 72px; height: 72px; border-radius: 50%;
@@ -753,15 +1003,18 @@ onMounted(async () => {
 }
 @keyframes pop-in { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
+/* ── Card idle ────────────────────────────────────────────────────────────── */
 .card-idle { padding: 0.5rem 0 0.25rem; }
 .idle-dots { display: flex; gap: 5px; margin-bottom: 0.75rem; }
 .idle-dots span { width: 26px; height: 10px; background: var(--border-color, #e5e7eb); border-radius: 999px; opacity: 0.6; }
 .idle-hint { font-size: 13px; color: var(--text-secondary, #9ca3af); margin: 0; }
 
+/* ── Email display ────────────────────────────────────────────────────────── */
 .email-display { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--bg-input, #f9fafb); border: 1.5px solid var(--border-color, #e5e7eb); border-radius: 12px; }
 .email-display__icon { color: #06b6d4; font-size: 16px; }
 .email-display__text { font-size: 14px; color: var(--text-primary, #374151); font-weight: 500; }
 
+/* ── Step indicator ───────────────────────────────────────────────────────── */
 .step-indicator { display: flex; align-items: center; gap: 8px; margin-bottom: 0.25rem; }
 .step-dot { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; background: var(--border-color, #e5e7eb); color: var(--text-secondary, #6b7280); }
 .step-dot--active { background: #6366f1; color: #fff; }
@@ -771,14 +1024,14 @@ onMounted(async () => {
 .step-label { font-size: 12px; font-weight: 600; color: var(--text-secondary, #6b7280); white-space: nowrap; }
 .step-hint { font-size: 13px; color: var(--text-secondary, #6b7280); line-height: 1.6; margin: 0; display: flex; align-items: flex-start; gap: 6px; }
 
+/* ── Email sent box ───────────────────────────────────────────────────────── */
 .email-sent-box { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 1.5rem 1rem; background: linear-gradient(135deg, rgba(6,182,212,0.06), rgba(99,102,241,0.06)); border: 1.5px dashed rgba(6,182,212,0.3); border-radius: 14px; gap: 0.75rem; }
 .email-sent-icon { width: 56px; height: 56px; background: linear-gradient(135deg, rgba(6,182,212,0.15), rgba(99,102,241,0.15)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #06b6d4; }
 .email-sent-title { font-size: 15px; font-weight: 700; color: var(--text-primary, #111827); margin: 0; }
 .email-sent-desc { font-size: 13px; color: var(--text-secondary, #6b7280); line-height: 1.7; margin: 0; }
 .email-sent-desc strong { color: #06b6d4; }
 
-.danger-desc { font-size: 13px; color: #9b2c2c; line-height: 1.6; margin: 0 0 1.25rem; }
-
+/* ── Modals ───────────────────────────────────────────────────────────────── */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999; }
 .modal-box { background: var(--bg-card, #ffffff); border-radius: 20px; padding: 2rem; max-width: 380px; width: 90%; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.2); }
 .modal-box--success { border-top: 3px solid #10b981; }
@@ -795,15 +1048,18 @@ onMounted(async () => {
 .modal-enter-from .modal-box, .modal-enter-from .crop-modal,
 .modal-leave-to .modal-box, .modal-leave-to .crop-modal { transform: scale(0.88); opacity: 0; }
 
+/* ── Toast ────────────────────────────────────────────────────────────────── */
 .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 99999; display: flex; align-items: center; gap: 10px; padding: 12px 22px; border-radius: 999px; font-size: 14px; font-weight: 600; font-family: inherit; box-shadow: 0 8px 30px rgba(0,0,0,0.18); white-space: nowrap; }
 .toast--success { background: #10b981; color: #fff; }
 .toast--error   { background: #ef4444; color: #fff; }
 .toast-enter-active, .toast-leave-active { transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
 .toast-enter-from, .toast-leave-to { opacity: 0; transform: translateX(-50%) translateY(12px); }
 
+/* ── Slide-up transition ──────────────────────────────────────────────────── */
 .slide-up-enter-active, .slide-up-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
 .slide-up-enter-from, .slide-up-leave-to { opacity: 0; transform: translateY(-8px); }
 
+/* ── Spinner ──────────────────────────────────────────────────────────────── */
 .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; flex-shrink: 0; }
 @keyframes spin { to { transform: rotate(360deg); } }
 </style>
