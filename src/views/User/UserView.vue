@@ -12,7 +12,7 @@
   border-radius: var(--radius);
 }
 .color-text {
-  color: var(--text-white);
+  color: var(--text-primary);
 }
 
 @keyframes shimmer {
