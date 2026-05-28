@@ -50,9 +50,7 @@
         </div>
 
         <!-- Mobile card — matches UserView style -->
-        <div
-          class="summary-card users-card d-flex d-md-none align-items-center justify-content-between p-3"
-        >
+        <div class="summary-card users-card d-flex d-md-none align-items-center justify-content-between p-3">
           <div class="d-flex align-items-center gap-3">
             <div class="card-icon users-icon">
               <i class="bi bi-people-fill"></i>
@@ -80,9 +78,7 @@
         </div>
 
         <!-- Mobile card — matches UserView style -->
-        <div
-          class="summary-card category-card d-flex d-md-none align-items-center justify-content-between p-3"
-        >
+        <div class="summary-card category-card d-flex d-md-none align-items-center justify-content-between p-3">
           <div class="d-flex align-items-center gap-3">
             <div class="card-icon category-icon">
               <i class="bi bi-grid-fill"></i>
@@ -102,8 +98,9 @@
         <div class="chart-card chart-card--large">
           <div class="chart-header">
             <div>
-              <h3>ចំណូល និង ចំណាយ</h3>
-              <p>តាមប្រភេទប្រតិបត្តិការ</p>
+              <h3>សកម្មភាពអ្នកប្រើប្រាស់</h3>
+              <p>ស្ថិតិប្រចាំសប្តាហ៍</p>
+
             </div>
           </div>
 
@@ -113,8 +110,8 @@
         <div class="chart-card chart-card--small">
           <div class="chart-header">
             <div>
-              <h3>សកម្មភាពអ្នកប្រើប្រាស់</h3>
-              <p>ស្ថិតិប្រចាំសប្តាហ៍</p>
+              <h3>ចំណូល និង ចំណាយ</h3>
+              <p>តាមប្រភេទប្រតិបត្តិការ</p>
             </div>
           </div>
 
@@ -177,12 +174,10 @@ const today = computed(() =>
 /* SKELETON */
 .skeleton {
   display: block;
-  background: linear-gradient(
-    90deg,
-    var(--bg-input) 25%,
-    var(--border-color) 50%,
-    var(--bg-input) 75%
-  );
+  background: linear-gradient(90deg,
+      var(--bg-input) 25%,
+      var(--border-color) 50%,
+      var(--bg-input) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.2s infinite;
   border-radius: var(--radius);
@@ -287,9 +282,9 @@ const today = computed(() =>
   font-size: 15px;
   white-space: nowrap;
   font-family: 'Kantumruy Pro', 'Khmer OS', sans-serif !important;
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   color: var(--text-white);
-  border: 1.5px solid rgba(255,255,255,0.4);
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
   border-radius: 12px;
 }
 
@@ -306,7 +301,7 @@ const today = computed(() =>
   border-radius: 20px;
 
   background-color: var(--bg-card);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
 
   transition: 0.3s;
 }
@@ -365,7 +360,7 @@ const today = computed(() =>
   padding: 20px;
   border-radius: 20px;
   width: 100%;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
 }
