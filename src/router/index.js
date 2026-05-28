@@ -16,7 +16,7 @@ import LandingFtView from '@/views/landingAllpage/LandingFtView.vue'
 import LandingAboutView from '@/views/landingAllpage/LandingAboutView.vue'
 import LandingHomeView from '@/views/landingAllpage/LandingHomeView.vue'
 import DetailUser from '@/views/User/DetailUser.vue'
-import NotFoundView from '@/views/NotFoundView.vue'
+import NotFoundView from '@/views/NotFoundView.vue' 
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -105,7 +105,7 @@ const router = createRouter({
           meta: { title: 'User', requiresAuth: true },
         },
         {
-          path: 'detail-user/:id',
+          path: 'detail-user/:id', // ✅ fixed: removed leading slash
           name: 'detailuser',
           component: DetailUser,
           meta: { title: 'Detail User', requiresAuth: true },
@@ -113,7 +113,7 @@ const router = createRouter({
       ],
     },
 
-    // 404 — must be last
+    // ✅ 404 — must be last
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
@@ -125,9 +125,6 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   document.title = to.meta.title || 'Expense Tracker'
-
-  // ✅ Skip guard for 404 — let NotFoundView render freely
-  if (to.name === 'not-found') return
 
   const isAuthenticated =
     !!localStorage.getItem('token') || !!sessionStorage.getItem('token')

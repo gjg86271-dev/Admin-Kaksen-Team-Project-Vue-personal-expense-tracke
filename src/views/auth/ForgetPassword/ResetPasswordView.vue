@@ -3,11 +3,17 @@ import { reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 import { useAuthStore } from '@/stores/authStore'
+import { useValidator } from '@/composables/useValidator'
 import AuthTimelineSidebar from '@/components/auth/AuthTimelineSidebar.vue'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+
+const { errors, clearFieldError, validateResetPassword } = useValidator([
+  'password',
+  'passwordConfirmation',
+])
 
 const sidebarSteps = [
   { id: 1, label: 'អ៊ីមែល', status: 'completed' },
@@ -36,43 +42,15 @@ if (!token) {
 
 const form = reactive({
   password: '',
-  confirmPassword: '',
-})
-
-const errors = reactive({
-  password: '',
-  confirmPassword: '',
+  passwordConfirmation: '',
 })
 
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
 const isLoading = ref(false)
 
-const clearError = (field) => {
-  errors[field] = ''
-}
-
-const validateForm = () => {
-  errors.password = ''
-  errors.confirmPassword = ''
-
-  if (!form.password) {
-    errors.password = 'សូមបញ្ចូលពាក្យសម្ងាត់ថ្មី'
-  } else if (form.password.length < 8) {
-    errors.password = 'ពាក្យសម្ងាត់ត្រូវមានយ៉ាងហោចណាស់ 8 តួអក្សរ'
-  }
-
-  if (!form.confirmPassword) {
-    errors.confirmPassword = 'សូមបញ្ជាក់ពាក្យសម្ងាត់'
-  } else if (form.password !== form.confirmPassword) {
-    errors.confirmPassword = 'ពាក្យសម្ងាត់មិនត្រូវគ្នា'
-  }
-
-  return !errors.password && !errors.confirmPassword
-}
-
 const submitResetPassword = async () => {
-  if (!validateForm()) return
+  if (!validateResetPassword(form)) return
 
   isLoading.value = true
 
@@ -137,7 +115,7 @@ const submitResetPassword = async () => {
                 autocomplete="new-password"
                 placeholder="បញ្ចូលពាក្យសម្ងាត់ថ្មី"
                 :disabled="isLoading"
-                @input="clearError('password')"
+                @input="clearFieldError('password')"
               />
               <button
                 class="eye-button"
@@ -155,16 +133,16 @@ const submitResetPassword = async () => {
           <!-- Confirm password -->
           <div class="field-group">
             <label class="field-label" for="confirm-password">បញ្ជាក់ពាក្យសម្ងាត់</label>
-            <div class="input-shell" :class="{ 'is-invalid': errors.confirmPassword }">
+            <div class="input-shell" :class="{ 'is-invalid': errors.passwordConfirmation }">
               <i class="bi bi-lock field-icon" aria-hidden="true"></i>
               <input
                 id="confirm-password"
-                v-model="form.confirmPassword"
+                v-model="form.passwordConfirmation"
                 :type="showConfirmPassword ? 'text' : 'password'"
                 autocomplete="new-password"
                 placeholder="បញ្ជាក់ពាក្យសម្ងាត់ម្តងទៀត"
                 :disabled="isLoading"
-                @input="clearError('confirmPassword')"
+                @input="clearFieldError('passwordConfirmation')"
               />
               <button
                 class="eye-button"
@@ -176,7 +154,7 @@ const submitResetPassword = async () => {
                 <i :class="showConfirmPassword ? 'bi bi-eye-slash' : 'bi bi-eye'" aria-hidden="true"></i>
               </button>
             </div>
-            <p v-if="errors.confirmPassword" class="field-error">{{ errors.confirmPassword }}</p>
+            <p v-if="errors.passwordConfirmation" class="field-error">{{ errors.passwordConfirmation }}</p>
           </div>
 
           <RouterLink class="login-help" :to="{ name: 'login' }">

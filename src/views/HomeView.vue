@@ -36,20 +36,36 @@
       <!-- CARDS -->
       <div class="top-cards">
 
-        <div class="summary-card users-card">
+        <!-- Desktop card -->
+        <div class="summary-card users-card d-none d-md-block">
           <div class="card-top">
             <div>
               <p class="card-label">អ្នកប្រើប្រាស់សរុប</p>
               <h2 class="card-value">{{ dashboard.totalUsers }}</h2>
             </div>
-
             <div class="card-icon users-icon">
               <i class="bi bi-people-fill"></i>
             </div>
           </div>
         </div>
 
-        <div class="summary-card category-card">
+        <!-- Mobile card — matches UserView style -->
+        <div
+          class="summary-card users-card d-flex d-md-none align-items-center justify-content-between p-3"
+        >
+          <div class="d-flex align-items-center gap-3">
+            <div class="card-icon users-icon">
+              <i class="bi bi-people-fill"></i>
+            </div>
+            <div>
+              <p class="card-label mb-0">អ្នកប្រើប្រាស់សរុប</p>
+              <h2 class="card-value mb-0">{{ dashboard.totalUsers }}</h2>
+            </div>
+          </div>
+        </div>
+
+        <!-- Desktop card -->
+        <div class="summary-card category-card d-none d-md-block">
           <div class="card-top">
             <div>
               <p class="card-label">ប្រភេទសរុប</p>
@@ -57,9 +73,23 @@
                 {{ totalAllCategories.totalCategories }}
               </h2>
             </div>
-
             <div class="card-icon category-icon">
               <i class="bi bi-grid-fill"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile card — matches UserView style -->
+        <div
+          class="summary-card category-card d-flex d-md-none align-items-center justify-content-between p-3"
+        >
+          <div class="d-flex align-items-center gap-3">
+            <div class="card-icon category-icon">
+              <i class="bi bi-grid-fill"></i>
+            </div>
+            <div>
+              <p class="card-label mb-0">ប្រភេទសរុប</p>
+              <h2 class="card-value mb-0">{{ totalAllCategories.totalCategories }}</h2>
             </div>
           </div>
         </div>
@@ -69,7 +99,7 @@
       <!-- CHARTS -->
       <div class="charts-grid">
 
-        <div class="chart-card">
+        <div class="chart-card chart-card--large">
           <div class="chart-header">
             <div>
               <h3>ចំណូល និង ចំណាយ</h3>
@@ -80,7 +110,7 @@
           <TrendChart />
         </div>
 
-        <div class="chart-card">
+        <div class="chart-card chart-card--small">
           <div class="chart-header">
             <div>
               <h3>សកម្មភាពអ្នកប្រើប្រាស់</h3>
@@ -309,7 +339,8 @@ const today = computed(() =>
   justify-content: center;
 
   border-radius: 14px;
-  color: var(--text-primary);
+  color: #fff;
+  font-size: 22px;
 }
 
 .users-icon {
@@ -321,10 +352,9 @@ const today = computed(() =>
 }
 
 /* CHARTS */
-/* CHARTS */
 .charts-grid {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
+  grid-template-columns: 1.8fr 1fr;
   gap: 20px;
   margin-top: 24px;
   align-items: stretch;
@@ -335,11 +365,17 @@ const today = computed(() =>
   padding: 20px;
   border-radius: 20px;
   width: 100%;
-  min-height: 350px;
   box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-
   display: flex;
   flex-direction: column;
+}
+
+.chart-card--large {
+  min-height: 430px;
+}
+
+.chart-card--small {
+  min-height: 350px;
 }
 
 .chart-card :deep(canvas) {
@@ -366,6 +402,7 @@ const today = computed(() =>
   font-size: 12px;
   color: var(--text-secondary);
 }
+
 /* TABLE */
 .table-wrapper {
   margin-top: 24px;
@@ -386,6 +423,23 @@ const today = computed(() =>
 @media (max-width: 768px) {
   .top-cards {
     grid-template-columns: 1fr;
+  }
+
+  .summary-card {
+    border-radius: 12px;
+    padding: 0;
+  }
+
+  .card-value {
+    font-size: 26px;
+  }
+
+  .card-icon {
+    width: 46px;
+    height: 46px;
+    font-size: 18px;
+    border-radius: 12px;
+    flex-shrink: 0;
   }
 
   .header-card {

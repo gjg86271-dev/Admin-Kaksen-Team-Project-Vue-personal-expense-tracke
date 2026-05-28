@@ -39,11 +39,11 @@
               d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
               stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
-          <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+          <span v-if="unreadUserCount > 0" class="notif-badge">{{ unreadUserCount > 9 ? '9+' : unreadUserCount }}</span>
         </button>
       </div>
 
-      <!-- Profile dropdown trigger — លាក់នៅ mobile, បង្ហាញតែ desktop -->
+      <!-- Profile dropdown trigger -->
       <div v-if="!isMobile" ref="profileTriggerRef" style="position:relative">
         <button class="profile-btn" type="button" @click.stop="toggleProfile" aria-label="Profile menu">
           <div class="avatar">
@@ -60,6 +60,35 @@
     </div>
   </header>
 
+  <!-- ── New-user toast popup ── -->
+  <Teleport to="body">
+    <TransitionGroup name="toast" tag="div" class="toast-stack">
+      <div
+        v-for="t in toasts"
+        :key="t.id"
+        class="toast-card"
+        @click="dismissToast(t.id)"
+      >
+        <div class="toast-avatar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="toast-body">
+          <p class="toast-title">អ្នកប្រើប្រាស់ថ្មី!</p>
+          <p class="toast-msg">{{ t.name }} បានចូលរួម</p>
+        </div>
+        <button class="toast-close" @click.stop="dismissToast(t.id)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div class="toast-progress" :style="{ animationDuration: t.duration + 'ms' }"></div>
+      </div>
+    </TransitionGroup>
+  </Teleport>
+
   <!-- Notification panel -->
   <Teleport to="body">
     <Transition name="panel">
@@ -68,65 +97,47 @@
         <div class="notif-head">
           <div class="notif-head-left">
             <span class="notif-title">ការជូនដំណឹង</span>
-            <span v-if="unreadCount > 0" class="notif-count-badge">{{ unreadCount }}</span>
+            <span v-if="unreadUserCount > 0" class="notif-count-badge">{{ unreadUserCount }}</span>
           </div>
-          <button v-if="alerts.length" class="btn-mark-all" @click="markAllRead">
-            សម្គាល់ទាំងអស់
-          </button>
+          <div v-if="userAlerts.length > 0" class="notif-head-actions">
+            <button class="btn-mark-all" @click="markAllRead">សម្គាល់ទាំងអស់</button>
+            <button class="btn-clear-all" @click="clearAllNotifs" title="លុបទាំងអស់">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
         </div>
 
-        <div v-if="notifLoading" class="notif-state">
-          <div class="spinner"></div>
-          <span>កំពុងផ្ទុក...</span>
-        </div>
-
-        <div v-else-if="alerts.length === 0" class="notif-state">
+        <!-- Users list -->
+        <div v-if="userAlerts.length === 0" class="notif-state">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" style="opacity:.25">
-            <path
-              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-              stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
-          <span>មិនមានការជូនដំណឹង</span>
+          <span>មិនមានអ្នកប្រើប្រាស់ថ្មី</span>
         </div>
 
         <div v-else class="notif-list">
           <div
-            v-for="a in alerts"
-            :key="a.id"
+            v-for="u in userAlerts"
+            :key="u.id"
             class="notif-item"
-            :class="[`is-${a.level}`, { unread: !a.read }]"
-            @click="markRead(a.id)"
+            :class="{ unread: !u.read }"
+            @click.stop="goToUser(u)"
+            
           >
-            <div class="notif-icon" :class="`notif-icon--${a.level}`">
-              <svg v-if="a.level === 'danger'" width="15" height="15" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
-                <path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-              </svg>
-              <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
-                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <div class="notif-icon notif-icon--user">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
               </svg>
             </div>
             <div class="notif-body">
-              <p class="notif-msg">{{ a.message }}</p>
-              <div class="progress-row">
-                <div class="progress-track">
-                  <div
-                    class="progress-fill"
-                    :class="`progress-fill--${a.level}`"
-                    :style="{ width: Math.min(a.percent, 100) + '%' }"
-                  ></div>
-                </div>
-                <span class="progress-pct" :class="`pct--${a.level}`">{{ a.percent }}%</span>
-              </div>
-              <p class="notif-amounts">
-                <span class="spent" :class="`spent--${a.level}`">${{ a.spent.toFixed(2) }}</span>
-                <span class="limit-sep"> / </span>
-                <span class="limit">${{ a.limit.toFixed(2) }}</span>
-              </p>
+              <p class="notif-msg">{{ u.name }} បានចូលរួម</p>
+              <p class="notif-time">{{ u.timeAgo }}</p>
             </div>
-            <span v-if="!a.read" class="unread-dot"></span>
+            <span v-if="!u.read" class="unread-dot"></span>
           </div>
         </div>
 
@@ -134,7 +145,7 @@
     </Transition>
   </Teleport>
 
-  <!-- Profile dropdown panel — desktop only -->
+  <!-- Profile dropdown panel -->
   <Teleport to="body">
     <Transition name="panel">
       <div v-if="profileOpen && !isMobile" ref="profileMenuRef"
@@ -159,9 +170,7 @@
             </svg>
             គណនីរបស់ខ្ញុំ
           </router-link>
-
           <div class="profile-sep"></div>
-
           <button class="profile-item profile-item--danger" type="button" @click="handleLogout">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
               <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
@@ -190,7 +199,7 @@ const emit      = defineEmits(['toggle-sidebar'])
 const router    = useRouter()
 const userStore = useUserStore()
 
-// ── Mobile breakpoint ──────────────────────────────────────────────────────
+// ── Mobile ─────────────────────────────────────────────────────────────────
 const MOBILE_BREAKPOINT = 768
 const isMobile = ref(window.innerWidth < MOBILE_BREAKPOINT)
 
@@ -201,20 +210,165 @@ const isDark = ref(
     ? localStorage.getItem(STORAGE_KEY) === 'dark'
     : window.matchMedia('(prefers-color-scheme: dark)').matches
 )
+
 function applyTheme(dark) {
   document.documentElement.classList.toggle('dark', dark)
   localStorage.setItem(STORAGE_KEY, dark ? 'dark' : 'light')
 }
 applyTheme(isDark.value)
-function toggleTheme() {
+
+function toggleTheme(event) {
   isDark.value = !isDark.value
-  applyTheme(isDark.value)
+
+  const x    = event?.clientX ?? window.innerWidth - 32
+  const y    = event?.clientY ?? 32
+  const root = document.documentElement
+
+  root.style.setProperty('--ripple-x', x + 'px')
+  root.style.setProperty('--ripple-y', y + 'px')
+  root.setAttribute('data-theme-to', isDark.value ? 'dark' : 'light')
+  root.classList.add('theme-transitioning')
+
+  const toggle = () => {
+    applyTheme(isDark.value)
+    root.removeAttribute('data-theme-to')
+  }
+
+  if (!document.startViewTransition) {
+    toggle()
+    setTimeout(() => root.classList.remove('theme-transitioning'), 600)
+    return
+  }
+
+  const t = document.startViewTransition(toggle)
+  t.finished.finally(() => root.classList.remove('theme-transitioning'))
 }
 
-// ── Avatar initials ────────────────────────────────────────────────────────
+// ── Avatar ─────────────────────────────────────────────────────────────────
 const avatarInitials = computed(() =>
   userStore.displayName.trim().charAt(0).toUpperCase() || 'U'
 )
+
+// ── Toasts (new user popup) ────────────────────────────────────────────────
+const TOAST_DURATION = 5000
+const toasts = ref([])
+
+function showToast(name) {
+  const id = Date.now() + Math.random()
+  toasts.value.push({ id, name, duration: TOAST_DURATION })
+  setTimeout(() => dismissToast(id), TOAST_DURATION)
+}
+
+function dismissToast(id) {
+  toasts.value = toasts.value.filter(t => t.id !== id)
+}
+
+// ── User registration alerts ───────────────────────────────────────────────
+const USER_NOTIF_KEY  = 'notif-users-read'
+const userAlerts      = ref([])
+const userReadSet     = ref(new Set(JSON.parse(localStorage.getItem(USER_NOTIF_KEY) || '[]')))
+const unreadUserCount = computed(() => userAlerts.value.filter(u => !u.read).length)
+
+function persistUserRead() {
+  localStorage.setItem(USER_NOTIF_KEY, JSON.stringify([...userReadSet.value]))
+}
+
+function markUserRead(id) {
+  userReadSet.value.add(id)
+  persistUserRead()
+  const u = userAlerts.value.find(u => u.id === id)
+  if (u) u.read = true
+}
+
+function markAllRead() {
+  userAlerts.value.forEach(u => { userReadSet.value.add(u.id); u.read = true })
+  persistUserRead()
+}
+
+function clearAllNotifs() {
+  userAlerts.value = []
+  userReadSet.value.clear()
+  persistUserRead()
+}
+
+async function goToUser(u) {
+  markUserRead(u.id)
+  notifOpen.value = false
+  await nextTick()
+  const current = router.currentRoute.value
+  if (current.name === 'detailuser' && current.params.id === u.id) return
+  try {
+    await router.push({ name: 'detailuser', params: { id: u.id } })
+  } catch (_) {}
+}
+
+function timeAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const mins  = Math.floor(diff / 60000)
+  const hours = Math.floor(diff / 3600000)
+  const days  = Math.floor(diff / 86400000)
+  if (mins  < 1)   return 'ទើបតែឥឡូវ'
+  if (mins  < 60)  return `${mins} នាទីមុន`
+  if (hours < 24)  return `${hours} ម៉ោងមុន`
+  return `${days} ថ្ងៃមុន`
+}
+
+let knownUserIds = new Set()
+let userPollTimer = null
+
+async function fetchUsers(isInitial = false) {
+  try {
+    const res = await api.get('users')
+
+    const users = (res.data?.data?.items ?? res.data?.data ?? [])
+      .filter(u =>
+        u.role !== 'ADMIN' &&
+        (u.fullName || u.name || '').toLowerCase() !== 'system admin'
+      )
+
+    if (isInitial) {
+      knownUserIds = new Set(users.map(u => u.id))
+
+      userAlerts.value = users
+        .slice()
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 20)
+        .map(u => ({
+          id: u.id,
+          name: u.fullName || u.name || u.email || 'អ្នកប្រើប្រាស់ថ្មី',
+          timeAgo: timeAgo(u.createdAt),
+          read: userReadSet.value.has(u.id),
+        }))
+
+      return
+    }
+
+    for (const u of users) {
+      if (!knownUserIds.has(u.id)) {
+        knownUserIds.add(u.id)
+
+        const name = u.fullName || u.name || u.email || 'អ្នកប្រើប្រាស់ថ្មី'
+
+        userAlerts.value.unshift({
+          id: u.id,
+          name,
+          timeAgo: timeAgo(u.createdAt),
+          read: false,
+        })
+
+        showToast(name)
+      }
+    }
+
+  } catch (e) {
+    console.error('users fetch failed:', e)
+  }
+}
+
+function startUserPolling() {
+  fetchUsers(true)
+  userPollTimer = setInterval(() => fetchUsers(false), 30_000)
+}
 
 // ── Profile dropdown ───────────────────────────────────────────────────────
 const profileOpen       = ref(false)
@@ -231,13 +385,7 @@ function positionProfile() {
   let left = r.right - panelWidth
   if (left < 8) left = 8
   if (left + panelWidth > viewportW - 8) left = viewportW - panelWidth - 8
-  profileStyle.value = {
-    position: 'fixed',
-    top:  `${r.bottom + 8}px`,
-    left: `${left}px`,
-    width: `${panelWidth}px`,
-    zIndex: 999999,
-  }
+  profileStyle.value = { position: 'fixed', top: `${r.bottom + 8}px`, left: `${left}px`, width: `${panelWidth}px`, zIndex: 999999 }
 }
 
 function toggleProfile() {
@@ -255,101 +403,7 @@ async function handleLogout() {
   router.push({ name: 'login' })
 }
 
-// expose handleLogout so Sidebar can call it on mobile
 defineExpose({ handleLogout, avatarInitials })
-
-// ── Budget alerts ──────────────────────────────────────────────────────────
-const alerts       = ref([])
-const notifLoading = ref(false)
-const readSet      = ref(new Set(JSON.parse(localStorage.getItem('notif-read') || '[]')))
-const unreadCount  = computed(() => alerts.value.filter(a => !a.read).length)
-
-function persistRead() { localStorage.setItem('notif-read', JSON.stringify([...readSet.value])) }
-function markRead(id)  { readSet.value.add(id); persistRead(); const a = alerts.value.find(a => a.id === id); if (a) a.read = true }
-function markAllRead() { alerts.value.forEach(a => { readSet.value.add(a.id); a.read = true }); persistRead() }
-
-async function fetchBudgetAlerts() {
-  notifLoading.value = true
-  try {
-    const now   = new Date()
-    const month = now.getMonth() + 1
-    const year  = now.getFullYear()
-
-    let allBudgets = []
-    try {
-      const budgetRes = await api.get('budgets')
-      allBudgets = budgetRes.data?.data?.items ?? []
-    } catch (e) {
-      console.error('budgets fetch failed:', e.response?.data)
-      alerts.value = []
-      return
-    }
-
-    const budgets = allBudgets.filter(
-      b => b.month === month && b.year === year && b.category?.type === 'EXPENSE'
-    )
-    if (!budgets.length) { alerts.value = []; return }
-
-    let txs = []
-    try {
-      const txRes = await api.get('transactions')
-      txs = txRes.data?.data?.items ?? []
-    } catch (e) {
-      console.error('transactions fetch failed:', e.response?.data)
-      alerts.value = []
-      return
-    }
-
-    const currentTxs = txs.filter(tx => {
-      const d = new Date(tx.transactionDate)
-      return d.getMonth() + 1 === month && d.getFullYear() === year
-    })
-
-    const spentMap = {}
-    for (const tx of currentTxs) {
-      if (tx.category?.type !== 'EXPENSE') continue
-      const cid = tx.category?.id ?? tx.categoryId
-      if (cid) spentMap[cid] = (spentMap[cid] ?? 0) + (tx.amount ?? 0)
-    }
-
-    const result    = []
-    const activeIds = new Set()
-
-    for (const b of budgets) {
-      const cid     = b.category?.id
-      const spent   = spentMap[cid] ?? 0
-      const limit   = b.limitAmount
-      if (!limit) continue
-      const percent = Math.round((spent / limit) * 100)
-      if (percent < 80) continue
-
-      const level   = percent >= 100 ? 'danger' : 'warning'
-      const id      = `${b.id}-${month}-${year}`
-      const catName = b.category?.name ?? '—'
-      const message = percent >= 100
-        ? `ចំណាយលើស! ${catName} (${percent}%)`
-        : `ជិតដល់កម្រិត! ${catName} (${percent}%)`
-
-      activeIds.add(id)
-      result.push({ id, level, message, category: catName, spent, limit, percent, read: readSet.value.has(id) })
-    }
-
-    for (const id of [...readSet.value]) {
-      if (!activeIds.has(id)) readSet.value.delete(id)
-    }
-    persistRead()
-
-    result.sort((a, b) =>
-      a.level === b.level ? b.percent - a.percent : a.level === 'danger' ? -1 : 1
-    )
-    alerts.value = result
-  } catch (e) {
-    console.error('budget alerts failed', e)
-    alerts.value = []
-  } finally {
-    notifLoading.value = false
-  }
-}
 
 // ── Notification panel ─────────────────────────────────────────────────────
 const notifOpen       = ref(false)
@@ -368,14 +422,8 @@ function positionNotif() {
   if (left + panelWidth > viewportW - 8) left = viewportW - panelWidth - 8
   if (left < 8) left = 8
   let top = r.bottom + 8
-  if (top + 460 > viewportH) top = r.top - 460 - 8
-  notifStyle.value = {
-    position: 'fixed',
-    top:  `${top}px`,
-    left: `${left}px`,
-    width: `${Math.min(panelWidth, viewportW - 16)}px`,
-    zIndex: 999999,
-  }
+  if (top + 480 > viewportH) top = r.top - 480 - 8
+  notifStyle.value = { position: 'fixed', top: `${top}px`, left: `${left}px`, width: `${Math.min(panelWidth, viewportW - 16)}px`, zIndex: 999999 }
 }
 
 function toggleNotif() {
@@ -391,10 +439,8 @@ function handleOutside(e) {
     profileOpen.value = false
 }
 
-// ── Resize — update isMobile + reposition panels ───────────────────────────
 function handleResize() {
   isMobile.value = window.innerWidth < MOBILE_BREAKPOINT
-  // close profile panel if switching to mobile
   if (isMobile.value) profileOpen.value = false
   if (notifOpen.value)   positionNotif()
   if (profileOpen.value) positionProfile()
@@ -402,7 +448,7 @@ function handleResize() {
 
 onMounted(() => {
   userStore.fetchProfile()
-  fetchBudgetAlerts()
+  startUserPolling()
   document.addEventListener('click', handleOutside)
   window.addEventListener('resize', handleResize)
   window.addEventListener('scroll', handleResize, true)
@@ -412,6 +458,7 @@ onUnmounted(() => {
   document.removeEventListener('click', handleOutside)
   window.removeEventListener('resize', handleResize)
   window.removeEventListener('scroll', handleResize, true)
+  if (userPollTimer) clearInterval(userPollTimer)
 })
 </script>
 
@@ -446,13 +493,13 @@ onUnmounted(() => {
   display: grid;
   place-items: center;
   cursor: pointer;
-  color: rgba(255,255,255,.75);
+  color: rgba(255, 255, 255, .75);
   transition: var(--transition);
   flex-shrink: 0;
 }
 .icon-button:hover {
-  background: rgba(255,255,255,.12);
-  border-color: rgba(255,255,255,.18);
+  background: rgba(255, 255, 255, .12);
+  border-color: rgba(255, 255, 255, .18);
   color: #fff;
 }
 
@@ -462,9 +509,9 @@ onUnmounted(() => {
 .theme-icon-leave-to     { opacity: 0; transform: rotate(30deg) scale(.75); }
 
 .brand-wrap { display: flex; align-items: center; }
-.brand-icon { width: 150px; height: 48px; object-fit: contain; }
+.brand-icon  { width: 150px; height: 48px; object-fit: contain; }
 
-/* ── Notif badge ── */
+/* ── Badge ── */
 .notif-badge {
   position: absolute; top: 2px; right: 2px;
   min-width: 16px; height: 16px; padding: 0 3px;
@@ -474,6 +521,91 @@ onUnmounted(() => {
   border: 1.5px solid var(--bg-sidebar); pointer-events: none; line-height: 1;
 }
 
+/* ── Toast stack ── */
+.toast-stack {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast-card {
+  pointer-events: all;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 300px;
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--color-success);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg, 0 8px 32px rgba(0,0,0,.15));
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.toast-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-success-light);
+  color: var(--color-success);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.toast-body { flex: 1; min-width: 0; }
+.toast-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-success);
+  margin: 0 0 2px;
+}
+.toast-msg {
+  font-size: 13px;
+  color: var(--text-primary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toast-close {
+  width: 20px; height: 20px;
+  display: grid; place-items: center;
+  border: none; background: none;
+  color: var(--text-secondary);
+  cursor: pointer; padding: 0; flex-shrink: 0;
+  border-radius: 4px;
+}
+.toast-close:hover { background: var(--bg-input); }
+
+.toast-progress {
+  position: absolute;
+  bottom: 0; left: 0;
+  height: 3px;
+  width: 100%;
+  background: var(--color-success);
+  transform-origin: left;
+  animation: toast-shrink linear forwards;
+}
+@keyframes toast-shrink {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+
+.toast-enter-active { transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .25s ease; }
+.toast-leave-active { transition: transform .2s ease, opacity .2s ease; }
+.toast-enter-from   { transform: translateX(110%); opacity: 0; }
+.toast-leave-to     { transform: translateX(110%); opacity: 0; }
+
 /* ── Notification panel ── */
 .notif-panel {
   background: var(--bg-card);
@@ -482,7 +614,7 @@ onUnmounted(() => {
   box-shadow: var(--shadow);
   overflow: hidden;
   display: flex; flex-direction: column;
-  max-height: 460px;
+  max-height: 480px;
 }
 
 .notif-head {
@@ -492,7 +624,8 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 .notif-head-left { display: flex; align-items: center; gap: 8px; }
-.notif-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.notif-head-actions { display: flex; align-items: center; gap: 8px; }
+.notif-title     { font-size: 14px; font-weight: 700; color: var(--text-primary); }
 .notif-count-badge {
   background: rgba(99,102,241,.2); color: #818cf8;
   font-size: 10px; font-weight: 700; border-radius: 6px; padding: 2px 7px;
@@ -502,19 +635,25 @@ onUnmounted(() => {
   border: none; cursor: pointer; font-family: var(--font-khmer); padding: 0;
 }
 .btn-mark-all:hover { opacity: .7; }
+.btn-clear-all {
+  width: 24px; height: 24px;
+  display: grid; place-items: center;
+  background: none; border: none;
+  color: var(--text-secondary);
+  cursor: pointer; border-radius: 6px;
+  transition: background .15s, color .15s;
+  padding: 0;
+}
+.btn-clear-all:hover {
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+}
 
 .notif-state {
   display: flex; flex-direction: column; align-items: center;
   justify-content: center; gap: 10px; padding: 32px 16px;
   color: var(--text-secondary); font-size: 13px;
 }
-.spinner {
-  width: 22px; height: 22px;
-  border: 2.5px solid var(--border-color);
-  border-top-color: var(--color-primary);
-  border-radius: 50%; animation: spin .7s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
 
 .notif-list { overflow-y: auto; flex: 1; }
 .notif-item {
@@ -530,24 +669,12 @@ onUnmounted(() => {
   width: 30px; height: 30px; border-radius: 8px;
   flex-shrink: 0; display: grid; place-items: center; margin-top: 1px;
 }
-.notif-icon--danger  { background: var(--color-danger-light); color: var(--color-danger); }
-.notif-icon--warning { background: #fef3c7; color: #b45309; }
-:global(.dark) .notif-icon--warning { background: #451a03; color: #fbbf24; }
+.notif-icon--user { background: var(--color-success-light); color: var(--color-success); }
 
-.notif-body { flex: 1; min-width: 0; }
-.notif-msg { font-size: 13px; font-weight: 600; color: var(--text-primary); line-height: 1.4; margin-bottom: 7px; }
-.progress-row { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
-.progress-track { flex: 1; height: 5px; background: var(--border-color); border-radius: 999px; overflow: hidden; }
-.progress-fill { height: 100%; border-radius: 999px; transition: width .5s ease; }
-.progress-fill--danger  { background: var(--color-danger); }
-.progress-fill--warning { background: #f59e0b; }
-.progress-pct { font-size: 11px; font-weight: 700; flex-shrink: 0; }
-.pct--danger  { color: var(--color-danger); }
-.pct--warning { color: #d97706; }
-.notif-amounts { font-size: 11px; color: var(--text-secondary); }
-.spent--danger  { color: var(--color-danger); font-weight: 600; }
-.spent--warning { color: #d97706; font-weight: 600; }
-.limit-sep { color: var(--border-color); }
+.notif-body   { flex: 1; min-width: 0; }
+.notif-msg    { font-size: 13px; font-weight: 600; color: var(--text-primary); line-height: 1.4; margin-bottom: 4px; }
+.notif-time   { font-size: 11px; color: var(--text-secondary); }
+
 .unread-dot {
   width: 7px; height: 7px; background: var(--color-primary);
   border-radius: 50%; flex-shrink: 0; margin-top: 4px;
@@ -555,14 +682,10 @@ onUnmounted(() => {
 
 /* ── Profile button ── */
 .profile-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  display: flex; align-items: center; gap: 8px;
   padding: 4px 8px 4px 4px;
-  border-radius: 10px;
-  border: 1px solid transparent;
-  background: transparent;
-  cursor: pointer;
+  border-radius: 10px; border: 1px solid transparent;
+  background: transparent; cursor: pointer;
   color: rgba(255, 255, 255, .9);
   transition: var(--transition);
 }
@@ -585,19 +708,15 @@ onUnmounted(() => {
   max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
-.chevron { transition: transform .2s; opacity: .6; color: var(--text-white); }
+.chevron      { transition: transform .2s; opacity: .6; color: var(--text-white); }
 .chevron.open { transform: rotate(180deg); }
 
 /* ── Profile panel ── */
 .profile-panel {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-  width: 240px;
+  background: var(--bg-card); border: 1px solid var(--border-color);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  overflow: hidden; width: 240px;
 }
-
 .profile-head {
   display: flex; align-items: center; gap: 12px;
   padding: 16px; border-bottom: 1px solid var(--border-color);
@@ -611,7 +730,6 @@ onUnmounted(() => {
   font-size: 11px; color: var(--text-secondary); margin: 0;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-
 .profile-list { padding: 6px; }
 .profile-item {
   display: flex; align-items: center; gap: 10px; padding: 9px 10px;
@@ -621,13 +739,11 @@ onUnmounted(() => {
   transition: var(--transition); font-family: var(--font-khmer);
 }
 .profile-item:hover { background: var(--bg-input); }
-.profile-item svg { flex-shrink: 0; opacity: .55; }
+.profile-item svg   { flex-shrink: 0; opacity: .55; }
 .profile-item:hover svg { opacity: 1; }
-
 .profile-sep { height: 1px; background: var(--border-color); margin: 4px 0; }
-
-.profile-item--danger { color: var(--color-danger); }
-.profile-item--danger svg { opacity: .7; }
+.profile-item--danger       { color: var(--color-danger); }
+.profile-item--danger svg   { opacity: .7; }
 .profile-item--danger:hover { background: var(--color-danger-light); }
 .profile-item--danger:hover svg { opacity: 1; }
 
@@ -636,7 +752,4 @@ onUnmounted(() => {
 :global(.panel-leave-active) { transition: opacity .15s ease, transform .15s ease; }
 :global(.panel-enter-from),
 :global(.panel-leave-to)     { opacity: 0; transform: translateY(-6px); }
-
-:global(.notif-panel),
-:global(.profile-panel) { z-index: 9999 !important; }
 </style>
