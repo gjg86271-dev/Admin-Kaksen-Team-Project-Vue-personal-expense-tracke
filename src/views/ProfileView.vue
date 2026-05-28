@@ -654,7 +654,7 @@ async function requestChangeEmail() {
   if (emailStep.value === 1 && !validateEmailForm()) return
   loadingEmail.value = true
   try {
-    await api.post('auth/change-email/request', { newEmail: emailForm.newEmail.trim(), password: emailForm.password })
+    await api.post('auth/admin/change-email/request', { newEmail: emailForm.newEmail.trim(), password: emailForm.password })
     emailStep.value = 2
   } catch (err) {
     const details  = err.response?.data?.details
@@ -794,7 +794,7 @@ section { background-color: transparent !important; }
   background: linear-gradient(135deg, #6366f1, #8b5cf6, #06b6d4) border-box;
   opacity: 0; transition: opacity 0.2s; pointer-events: none;
 }
-.avatar-ring:hover .avatar-ring-glow { opacity: 1; }
+/* .avatar-ring:hover .avatar-ring-glow { opacity: 1; } */
 
 .hero-info { flex: 1; min-width: 200px; }
 .hero-name { font-size: 26px; font-weight: 700; color: #fff; margin: 0 0 10px; letter-spacing: -0.3px; }
