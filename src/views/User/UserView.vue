@@ -11,6 +11,9 @@
   animation: shimmer 1.2s infinite;
   border-radius: var(--radius);
 }
+.color-text {
+  color: var(--text-white);
+}
 
 @keyframes shimmer {
   0%   { background-position: 200% 0; }
@@ -596,9 +599,9 @@
     <BaseModal v-if="showDeleteModal" title="លុបអ្នកប្រើប្រាស់" @close-modal="closeDeleteModal">
       <template #body>
         <div class="text-center">
-          <div class="fs-1 mb-3">🗑️</div>
-          <h4 class="fw-bold">លុបអ្នកប្រើប្រាស់?</h4>
-          <p>
+          <div class="fs-1 mb-3 color-text">🗑️</div>
+          <h4 class="fw-bold color-text">លុបអ្នកប្រើប្រាស់?</h4>
+          <p class="color-text">
             តើអ្នកពិតជាចង់លុប
             <strong>{{ selectedUser?.fullName }}</strong>
             មែនទេ?
