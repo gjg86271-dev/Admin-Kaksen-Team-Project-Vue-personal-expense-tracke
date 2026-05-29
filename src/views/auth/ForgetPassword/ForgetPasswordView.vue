@@ -25,14 +25,16 @@ const handleForgetPassword = async () => {
   apiError.value = ''
   if (!validateForgetPassword(form)) return
 
+  const email = form.email.trim()
   loading.value = true
+
   try {
-    await authStore.forgotPassword({ email: form.email.trim() })
+    await authStore.forgotPassword({ email })
 
     await Swal.fire({
       icon: 'success',
       title: 'ផ្ញើបានជោគជ័យ',
-      html: `សូមពិនិត្យអ៊ីមែល <strong>${form.email.trim()}</strong><br>ដើម្បីទទួលបាន Token ឬ OTP`,
+      html: `សូមពិនិត្យអ៊ីមែល <strong>${email}</strong><br>ដើម្បីទទួលបាន Token ឬ OTP`,
       timer: 2500,
       timerProgressBar: true,
       showConfirmButton: false,
@@ -40,17 +42,9 @@ const handleForgetPassword = async () => {
 
     router.push({ name: 'verify-otp' })
 
-  } catch (error) {
-    const data = error?.response?.data
+  } catch {
     apiError.value =
-      (Array.isArray(data?.details) && data.details.length > 0
-        ? data.details[0]?.message
-        : null) ||
-      data?.message ||
-      data?.error ||
-      authStore.errorMsg ||
-      error?.message ||
-      'មិនអាចផ្ញើបានទេ។ សូមព្យាយាមម្តងទៀត។'
+      authStore.errorMsg || 'មិនអាចផ្ញើបានទេ។ សូមព្យាយាមម្តងទៀត។'
   } finally {
     loading.value = false
   }
@@ -72,7 +66,7 @@ const handleForgetPassword = async () => {
           បញ្ចូលអ៊ីមែលរបស់អ្នក ដើម្បីទទួលសារសម្រាប់កំណត់ពាក្យសម្ងាត់ថ្មី
         </p>
 
-        <form class="auth-form" @submit.prevent="handleForgetPassword" novalidate>
+        <form class="auth-form" @submit.prevent="handleForgetPassword" novalidate autocomplete="off">
 
           <!-- API error -->
           <Transition name="fade-down">

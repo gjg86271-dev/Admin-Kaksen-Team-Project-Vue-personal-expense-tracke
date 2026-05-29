@@ -16,16 +16,18 @@ export const useAuthStore = defineStore("auth", () => {
 
   // ── State ──────────────────────────────────────────────
   const token = ref(localStorage.getItem("token") || null)
-  const user = ref(null)
+  const user = ref(
+    localStorage.getItem("role")
+      ? { role: localStorage.getItem("role") }
+      : null
+  )
   const errorMsg = ref("")
   const resetToken = ref("")
   const resetEmail = ref(localStorage.getItem("resetEmail") || "")
 
   // ── Computed ───────────────────────────────────────────
   const isLogin = computed(() => !!token.value)
-  const isAdmin = computed(() => {
-    return localStorage.getItem("role") === "ADMIN"
-  })
+  const isAdmin = computed(() => user.value?.role === "ADMIN")
 
   // ── Actions ────────────────────────────────────────────
   const setAuth = (data) => {
@@ -48,14 +50,12 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   const login = async (data) => {
-    // rememberMe ignored — always persists to localStorage
     const { rememberMe, ...loginData } = data
     try {
       const res = await api.post("/auth/login", loginData)
       const userToken = res.data.data.token
       const userData = res.data.data.user ?? null
 
-      // Check role — ADMIN only
       const roleRes = await api.get("/roles/1", {
         headers: { Authorization: `Bearer ${userToken}` },
       })
@@ -66,7 +66,6 @@ export const useAuthStore = defineStore("auth", () => {
         throw new Error("Unauthorized role")
       }
 
-      // Persist everything to localStorage
       token.value = userToken
       user.value = { ...userData, role: roleName }
       localStorage.setItem("token", userToken)
@@ -111,7 +110,6 @@ export const useAuthStore = defineStore("auth", () => {
       throw error
     }
   }
-  const sentOtp = requestOtp
 
   const resendOtp = async (data) => {
     try {
@@ -144,7 +142,7 @@ export const useAuthStore = defineStore("auth", () => {
       errorMsg.value = ""
       return res.data
     } catch (error) {
-      errorMsg.value = getApiErrorMessage(error, "មិនអាចផ្ញើ OTP បាន សូមព្យាយាមម្តងទៀត")
+      errorMsg.value = getApiErrorMessage(error, "មិនអាចផ្ញើសារបាន សូមព្យាយាមម្តងទៀត")
       throw error
     }
   }
@@ -170,9 +168,9 @@ export const useAuthStore = defineStore("auth", () => {
   return {
     token, user, errorMsg, resetToken, resetEmail,
     isLogin, isAdmin,
-    setAuth, logout,
+    setAuth, saveToken, logout,
     login, register,
-    requestOtp, sentOtp, resendOtp, verifyOtp,
+    requestOtp, resendOtp, verifyOtp,
     forgotPassword, resetPassword,
   }
 })
