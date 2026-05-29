@@ -39,12 +39,8 @@ const handleForgetPassword = async () => {
       timerProgressBar: true,
       showConfirmButton: false,
     })
-
-    router.push({ name: 'verify-otp' })
-
   } catch {
-    apiError.value =
-      authStore.errorMsg || 'មិនអាចផ្ញើបានទេ។ សូមព្យាយាមម្តងទៀត។'
+    apiError.value = 'មិនអាចផ្ញើបានទេ។'
   } finally {
     loading.value = false
   }

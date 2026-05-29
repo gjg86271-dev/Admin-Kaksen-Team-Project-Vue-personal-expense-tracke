@@ -14,7 +14,6 @@ const getApiErrorMessage = (error, fallback) => {
 
 export const useAuthStore = defineStore("auth", () => {
 
-  // ── State ──────────────────────────────────────────────
   const token = ref(localStorage.getItem("token") || null)
   const user = ref(
     localStorage.getItem("role")
@@ -25,11 +24,9 @@ export const useAuthStore = defineStore("auth", () => {
   const resetToken = ref("")
   const resetEmail = ref(localStorage.getItem("resetEmail") || "")
 
-  // ── Computed ───────────────────────────────────────────
   const isLogin = computed(() => !!token.value)
   const isAdmin = computed(() => user.value?.role === "ADMIN")
 
-  // ── Actions ────────────────────────────────────────────
   const setAuth = (data) => {
     user.value = data.user
     token.value = data.token
@@ -50,6 +47,7 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   const login = async (data) => {
+    errorMsg.value = ""
     const { rememberMe, ...loginData } = data
     try {
       const res = await api.post("/auth/login", loginData)
@@ -86,10 +84,10 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   const register = async (data) => {
+    errorMsg.value = ""
     try {
       const res = await api.post("/auth/register", data)
       user.value = res.data.data
-      errorMsg.value = ""
       return res.data
     } catch (err) {
       errorMsg.value = getApiErrorMessage(
@@ -101,9 +99,9 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   const requestOtp = async (data) => {
+    errorMsg.value = ""
     try {
       const res = await api.post("/otp/send", data)
-      errorMsg.value = ""
       return res.data
     } catch (error) {
       errorMsg.value = getApiErrorMessage(error, "ផ្ញើរ OTP បានបរាជ័យ")
@@ -112,9 +110,9 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   const resendOtp = async (data) => {
+    errorMsg.value = ""
     try {
       const res = await api.post("/otp/resend", data)
-      errorMsg.value = ""
       return res.data
     } catch (error) {
       errorMsg.value = getApiErrorMessage(error, "ផ្ញើរ OTP បានបរាជ័យ")
@@ -123,10 +121,10 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   const verifyOtp = async (data) => {
+    errorMsg.value = ""
     try {
       const res = await api.post("/otp/verify", data)
       resetToken.value = res.data?.data?.token ?? res.data?.token ?? ""
-      errorMsg.value = ""
       return res.data
     } catch (error) {
       errorMsg.value = getApiErrorMessage(error, "លេខកូដ OTP មិនត្រឹមត្រូវ ឬផុតកំណត់")
@@ -135,36 +133,35 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   const forgotPassword = async (data) => {
+    errorMsg.value = ""
     try {
-      const res = await api.post("/auth/admin/forget-password", data)
+      const res = await api.post("/auth/admin/forgot-password", data)
       resetEmail.value = data.email
       localStorage.setItem("resetEmail", data.email)
-      errorMsg.value = ""
       return res.data
     } catch (error) {
-      errorMsg.value = getApiErrorMessage(error, "មិនអាចផ្ញើសារបាន សូមព្យាយាមម្តងទៀត")
+      errorMsg.value = getApiErrorMessage(error, "មិនអាចផ្ញើសារបាន សូមព្យាយាមមួយទៀត")
       throw error
     }
   }
 
   const resetPassword = async (data) => {
+    errorMsg.value = ""
     try {
       const res = await api.post("/auth/reset-password", data)
       resetToken.value = ""
       resetEmail.value = ""
       localStorage.removeItem("resetEmail")
-      errorMsg.value = ""
       return res.data
     } catch (error) {
       errorMsg.value = getApiErrorMessage(
         error,
-        "មិនអាចកំណត់ពាក្យសម្ងាត់ឡើងវិញបាន សូមព្យាយាមម្តងទៀត"
+        "មិនអាចកំណត់ពាក្យសម្ងាត់ឡើងវិញបាន សូមព្យាយាមមួយទៀត"
       )
       throw error
     }
   }
 
-  // ── Exports ────────────────────────────────────────────
   return {
     token, user, errorMsg, resetToken, resetEmail,
     isLogin, isAdmin,
